@@ -1,7 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace TrixieBot
@@ -25,7 +22,7 @@ namespace TrixieBot
 
         abstract public void SendLocation(string destination, float latitude, float longitude);
 
-        abstract public void SendMakdownMessage(string destination, string message);
+        abstract public void SendMarkdownMessage(string destination, string message);
 
         abstract public void SendPlainTextMessage(string destination, string message);
 

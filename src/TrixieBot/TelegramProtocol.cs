@@ -147,7 +147,7 @@ namespace TrixieBot
             bot.SendLocationAsync(destination, latitude, longitude);
         }
 
-        public override void SendMakdownMessage(string destination, string message)
+        public override void SendMarkdownMessage(string destination, string message)
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
             bot.SendTextMessageAsync(destination, message, false, false, 0, null, ParseMode.Markdown);

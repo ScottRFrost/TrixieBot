@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace TrixieBot
@@ -374,8 +373,8 @@ ww - WeightWatcher PointsPlus calc
                     {
                         var rgoog = new Random();
                         var igoog = rgoog.Next(0, Enumerable.Count(dgoog.d.results));
-                        string searchResult = dgoog.d.results[igoog].Title.ToString() + " | " + dgoog.d.results[igoog].Description.ToString() + "<br/>" + dgoog.d.results[igoog].Url;
-                        protocol.SendHTMLMessage(replyDestination, searchResult);
+                        string searchResult = dgoog.d.results[igoog].Title.ToString() + " | " + dgoog.d.results[igoog].Description.ToString() + "\r\n" + dgoog.d.results[igoog].Url;
+                        protocol.SendPlainTextMessage(replyDestination, searchResult);
                     }
                     break;
 
@@ -446,14 +445,14 @@ ww - WeightWatcher PointsPlus calc
                     decimal cwins = Convert.ToDecimal(casual["Games Won"].Replace(",", ""));
                     decimal cplayed = Convert.ToDecimal(casual["Games Played"].Replace(",", ""));
                     decimal celims = Convert.ToDecimal(casual["Eliminations"].Replace(",", ""));
-                    decimal cassists = Convert.ToDecimal(competitive["Defensive Assists"].Replace(",", "")) + Convert.ToDecimal(competitive["Offensive Assists"].Replace(",", ""));
+                    decimal cassists = Convert.ToDecimal(casual["Defensive Assists"].Replace(",", "")) + Convert.ToDecimal(casual["Offensive Assists"].Replace(",", ""));
                     decimal cdeaths = Convert.ToDecimal(casual["Deaths"].Replace(",", ""));
                     stringBuilder.AppendLine("*Filthy Casual Quick Play - Level " + playerLevel + " *");
                     stringBuilder.AppendLine(cwins + " W, " + (cplayed - cwins).ToString() + " L (" + Math.Round((cwins / cplayed) * 100, 2) + "%) in " + casual["Time Played"] + " played");
                     stringBuilder.AppendLine(celims + " Elims, " + cassists + " Assists, " + cdeaths + " Deaths (" + Math.Round(((celims + cassists) / cdeaths), 2) + " KDA)");
                     stringBuilder.AppendLine(casual["Cards"] + " Cards, " + casual["Medals - Gold"] + " Gold, " + casual["Medals - Silver"] + " Silver, " + casual["Medals - Bronze"] + " Bronze");
                     stringBuilder.AppendLine("https://playoverwatch.com/en-us/career/pc/us/" + body.Replace("#", "-"));
-                    protocol.SendMakdownMessage(replyDestination, stringBuilder.ToString());
+                    protocol.SendMarkdownMessage(replyDestination, stringBuilder.ToString());
                     break;
 
                 case "/pony":
@@ -535,7 +534,7 @@ ww - WeightWatcher PointsPlus calc
                             protocol.SendPlainTextMessage(replyDestination, "The only sed command parsed is /s/replace this/replace with/");
                         else
                         {
-                            protocol.SendMakdownMessage(replyDestination, "*" + replyFullname + "* \r\n" + replyMessage.Replace(sed[1], sed[2]));
+                            protocol.SendMarkdownMessage(replyDestination, "*" + replyFullname + "* \r\n" + replyMessage.Replace(sed[1], sed[2]));
                         }
                     }
                     break;
@@ -724,7 +723,7 @@ ww - WeightWatcher PointsPlus calc
                     {
                         var page = dwiki["query"]["pages"].First().First();
                         if (Convert.ToString(page["pageid"]).Length > 0)
-                            protocol.SendMakdownMessage(replyDestination, "*" + page["title"] + "*\r\n" + page["extract"] + "\r\n" + "https://en.wikipedia.org/?curid=" + page["pageid"]);
+                            protocol.SendMarkdownMessage(replyDestination, "*" + page["title"] + "*\r\n" + page["extract"] + "\r\n" + "https://en.wikipedia.org/?curid=" + page["pageid"]);
                         else
                         {
                             protocol.SendPlainTextMessage(replyDestination, "You have disappointed Trixie.  \"" + body + "\" is bullshit and you know it.");
