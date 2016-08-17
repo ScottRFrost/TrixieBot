@@ -46,6 +46,16 @@ namespace TrixieBot
 
             switch (command.ToLowerInvariant())
             {
+                case "/alahaakboom":
+                case "/alahuakboom":
+                case "/allahaakboom":
+                case "/allahuakboom":
+                case "/resettheclock":
+                case "/resetclock":
+                case "/jihad":
+                    protocol.SendImage(replyDestination, "http://i.imgur.com/BA1dOl5.jpg", "Days since last Muslim terrorist attack"); // Sorry if you find this offenseive, it was specifically requested by some users
+                    break;
+
                 case "/beer":
                     if (body == string.Empty)
                     {
@@ -269,11 +279,11 @@ ww - WeightWatcher PointsPlus calc
 
                     // Scrape it
                     var imdb = httpClient.DownloadString(imdbUrl).Result.Replace("\r", "").Replace("\n", "");
-                    var title = Regex.Match(imdb, @"<title>(IMDb \- )*(.*?) \(.*?</title>", RegexOptions.IgnoreCase).Groups[2].Value.Trim();
+                    var title = Regex.Match(imdb, @"<title>(IMDb \- )*(.*?) \(.*?</title>", RegexOptions.IgnoreCase).Groups[2].Value.Trim().Replace("&#x22;","\"").Replace("&#x27;","'");
                     var year = Regex.Match(imdb, @"<title>.*?\(.*?(\d{4}).*?\).*?</title>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
                     var rating = Regex.Match(imdb, @"<b>(\d.\d)/10</b>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
                     var votes = Regex.Match(imdb, @">(\d+,?\d*) votes<", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
-                    var plot = Regex.Match(imdb, @"Plot:</h5>.*?<div class=""info-content"">(.*?)(<a|</div)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+                    var plot = Regex.Match(imdb, @"Plot:</h5>.*?<div class=""info-content"">(.*?)(<a|</div)", RegexOptions.IgnoreCase).Groups[1].Value.Trim().Replace("&#x22;", "\"").Replace("&#x27;", "'");
                     var tagline = Regex.Match(imdb, @"Tagline:</h5>.*?<div class=""info-content"">(.*?)(<a|</div)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
                     var poster = Regex.Match(imdb, @"<div class=""photo"">.*?<a name=""poster"".*?><img.*?src=""(.*?)"".*?</div>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
                     var posterFull = string.Empty;
