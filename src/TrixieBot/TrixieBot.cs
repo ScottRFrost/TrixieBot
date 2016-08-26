@@ -1,12 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-
 
 namespace TrixieBot
 {
@@ -42,7 +36,7 @@ namespace TrixieBot
             }
 
             // Wait for all tasks to end
-            var telegramResult = await telegram;
+            var taskResult = Task.WaitAny(telegram);
             return false;
         }
     }
