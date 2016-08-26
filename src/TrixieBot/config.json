@@ -1,8 +1,10 @@
 ﻿{
   "Keys": {
     "TelegramKey": "",
+    "DiscordToken": "",
     "WundergroundKey": "",
     "BingKey": "",
-    "WolframAppID": ""
+    "WolframAppID": "",
+    "BattleNetKey": ""
   }
 }
