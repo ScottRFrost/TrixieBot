@@ -721,7 +721,7 @@ namespace TrixieBot
                         else
                         {
                             protocol.SendPlainTextMessage(replyDestination,
-                                dwthr.current_observation.display_location.full + " Conditions: " +
+                                (string)dwthr.current_observation.display_location.full + " Conditions: " +
                                 dwthr.current_observation.weather +
                                 " Wind: " + dwthr.current_observation.wind_string +
                                 " Temp: " + dwthr.current_observation.temperature_string + " Feels Like: " +
@@ -812,9 +812,20 @@ namespace TrixieBot
                         break;
                 }
             }
+            catch (System.Net.Http.HttpRequestException exception)
+            {
+                protocol.SendPlainTextMessage(replyDestination, exception.Message);
+            }
             catch (Exception exception)
             {
-                protocol.SendPlainTextMessage(replyDestination, exception.ToString());
+                if (exception.InnerException != null && exception.InnerException.Source == "System.Net.Http")
+                {
+                    protocol.SendPlainTextMessage(replyDestination, exception.InnerException.Message);
+                }
+                else
+                {
+                    protocol.SendPlainTextMessage(replyDestination, exception.ToString());
+                }
             }
         }
     }
