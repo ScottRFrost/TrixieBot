@@ -24,6 +24,7 @@ namespace TrixieBot
             var battleNetKey = keys["BattleNetKey"];
             var httpClient = new ProHttpClient();
             var stringBuilder = new StringBuilder();
+            var angleSharpConfig = Configuration.Default.WithDefaultLoader();
 
             // Log to console
             Console.WriteLine(replyDestination + " < " + replyUsername + " - " + text);
@@ -277,29 +278,100 @@ namespace TrixieBot
                         if (dimdb.d == null || dimdb.d.results == null ||
                             Enumerable.Count(dimdb.d.results) < 1)
                         {
-                            protocol.SendPlainTextMessage(replyDestination, "Trixie was unable to find a movie name matching:" + body);
+                            protocol.SendPlainTextMessage(replyDestination, "Trixie was unable to find a movie name matching: " + body);
                             break;
                         }
 
                         // Find correct /combined URL
                         string imdbUrl = dimdb.d.results[0].Url;
-                        imdbUrl = (imdbUrl.Replace("/business", "").Replace("/combined", "").Replace("/faq", "").Replace("/goofs", "").Replace("/news", "").Replace("/parentalguide", "").Replace("/quotes", "").Replace("/ratings", "").Replace("/synopsis", "").Replace("/trivia", "") + "/combined").Replace("//combined", "/combined");
+                        imdbUrl = (imdbUrl.Replace("/business", "").Replace("/combined", "").Replace("/faq", "").Replace("/goofs", "").Replace("/news", "").Replace("/parentalguide", "").Replace("/quotes", "").Replace("/ratings", "").Replace("/synopsis", "").Replace("/trivia", "")); // + "/combined").Replace("//combined","/combined");
 
-                        // Scrape it
-                        var imdb = httpClient.DownloadString(imdbUrl).Result.Replace("\r", "").Replace("\n", "");
-                        var title = Regex.Match(imdb, @"<title>(IMDb \- )*(.*?) \(.*?</title>", RegexOptions.IgnoreCase).Groups[2].Value.Trim().Replace("&#x22;", "\"").Replace("&#x27;", "'");
-                        var year = Regex.Match(imdb, @"<title>.*?\(.*?(\d{4}).*?\).*?</title>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
-                        var rating = Regex.Match(imdb, @"<b>(\d.\d)/10</b>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
-                        var votes = Regex.Match(imdb, @">(\d+,?\d*) votes<", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
-                        var plot = Regex.Match(imdb, @"Plot:</h5>.*?<div class=""info-content"">(.*?)(<a|</div)", RegexOptions.IgnoreCase).Groups[1].Value.Trim().Replace("&#x22;", "\"").Replace("&#x27;", "'");
-                        var tagline = Regex.Match(imdb, @"Tagline:</h5>.*?<div class=""info-content"">(.*?)(<a|</div)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
-                        var poster = Regex.Match(imdb, @"<div class=""photo"">.*?<a name=""poster"".*?><img.*?src=""(.*?)"".*?</div>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+                        // Scrape it with AngleSharp
+                        var imdbDoc = BrowsingContext.New(angleSharpConfig).OpenAsync(imdbUrl).Result;
+                        var overviewNode = imdbDoc.QuerySelector("div.title-overview");
+                        if (overviewNode == null)
+                        {
+                            protocol.SendPlainTextMessage(replyDestination, "Trixie was unable to find a movie name matching: " + body);
+                            break;
+                        }
+                        //var titleBarNode = overviewNode.QuerySelector("div.title_bar_wrapper");
+                        var plotNode = overviewNode.QuerySelector("div.plot_summary_wrapper");
+                        //var ratingNode = overviewNode.QuerySelector("div.ratings_wrapper");
+                        var posterNode = overviewNode.QuerySelector("img[itemprop='image']");
+
+                        // Title content rating and runtime
+                        var title = overviewNode.QuerySelector("[itemprop='name']").TextContent.Trim();
+                        var contentRating = overviewNode.QuerySelector("[itemprop='contentRating']")?.Attributes["content"].Value;
+                        var runtime = string.Empty;
+                        var runtimeNode = overviewNode.QuerySelector("time[itemprop='duration']");
+                        if (runtimeNode != null)
+                        {
+                            runtime = runtimeNode.TextContent.Trim();
+                        }
+
+                        // Year
+                        var year = string.Empty;
+                        var ratingWidgetTitleNode = overviewNode.QuerySelector("#ratingWidget p");
+                        if (ratingWidgetTitleNode != null)
+                        {
+                            var yearText = ratingWidgetTitleNode.ChildNodes[2];
+                            if (yearText != null)
+                            {
+                                year = yearText.TextContent.Trim();
+                                title = title.Replace(year, "");
+                            }
+                        }
+
+                        // Rating
+                        var rating = string.Empty;
+                        var votes = string.Empty;
+                        var ratingValueNode = overviewNode.QuerySelector("span[itemprop='ratingValue']");
+                        if (ratingValueNode == null)
+                        {
+                            // Some popular / new movies have a different format
+                            var specialRatingValueNode = overviewNode.QuerySelector("div.star-box div.titlePageSprite");
+                            if (specialRatingValueNode != null)
+                            {
+                                rating = specialRatingValueNode.TextContent.Trim();
+                            }
+                        }
+                        else
+                        {
+                            // Usual format
+                            rating = ratingValueNode.TextContent.Replace(",", ".");
+                        }
+
+                        var voteNode = overviewNode.QuerySelector("span[itemprop='ratingCount']");
+                        if (voteNode != null)
+                        {
+                            votes = voteNode.TextContent.Trim();
+                        }
+
+                        // Plot
+                        var plot = string.Empty;
+                        var descriptionNode = overviewNode.QuerySelector("[itemprop='description']");
+                        plot = descriptionNode.TextContent.Trim();
+                        var metaCritic = string.Empty;
+                        var mcNode = overviewNode.QuerySelector("div.metacriticScore span");
+                        if (mcNode != null)
+                        {
+                            metaCritic = mcNode.TextContent.Trim();
+                        }
+
+                        // Poster image
+                        var poster = string.Empty;
                         var posterFull = string.Empty;
-                        if (!string.IsNullOrEmpty(poster) && poster.IndexOf("media-imdb.com", StringComparison.Ordinal) > 0)
+                        if(posterNode != null)
+                        {
+                            poster = posterNode.Attributes["src"].Value;
+                        }
+                        if (!string.IsNullOrEmpty(poster) && poster.IndexOf("_V1", StringComparison.Ordinal) > 0)
                         {
                             poster = Regex.Replace(poster, @"_V1.*?.jpg", "_V1._SY200.jpg");
                             posterFull = Regex.Replace(poster, @"_V1.*?.jpg", "_V1._SX1280_SY1280.jpg");
                         }
+
+                        // Output
                         if (title.Length < 2)
                         {
                             protocol.SendPlainTextMessage(replyDestination, "Trixie was unable to find a movie name matching: " + body);
@@ -317,8 +389,7 @@ namespace TrixieBot
                                 //var rtCritic = Regex.Match(rt, @"<span class=""meter-value .*?<span>(.*?)</span>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
                                 var rtCritic = Regex.Match(rt, @"<span class=""meter-value superPageFontColor""><span>(.*?)</span>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
                                 var rtAudience = Regex.Match(rt, @"<span class=""superPageFontColor"" style=""vertical-align:top"">(.*?)</span>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
-                                protocol.SendPlainTextMessage(replyDestination, title + " (" + year + ") - " + tagline + "\r\nIMDb: " + rating + " (" + votes + " votes) | RT critic: " + rtCritic + "% | RT audience: " + rtAudience + "\r\n" + plot);
-
+                                protocol.SendPlainTextMessage(replyDestination, title + " " + year + " - Rated " + contentRating + " " + runtime + "\r\nIMDb: " + rating + " (" + votes + ") | RT: " + rtCritic + "% | RT aud: " + rtAudience + " | MC: " + metaCritic + "\r\n" + plot);
                             }
                             else
                             {
@@ -326,7 +397,7 @@ namespace TrixieBot
                                 //var rtCritic = Regex.Match(rt, @"<span class=""meter-value .*?<span>(.*?)</span>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
                                 var rtCritic = Regex.Match(rt, @"<span class=""meter-value superPageFontColor""><span>(.*?)</span>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
                                 var rtAudience = Regex.Match(rt, @"<span class=""superPageFontColor"" style=""vertical-align:top"">(.*?)</span>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
-                                protocol.SendPlainTextMessage(replyDestination, title + " (" + year + ") - " + tagline + "\r\nIMDb: " + rating + " (" + votes + " votes) | RT critic: " + rtCritic + "% | RT audience: " + rtAudience + "\r\n" + plot);
+                                protocol.SendPlainTextMessage(replyDestination, title + " (" + year + ") - " + runtime + "\r\nIMDb: " + rating + " (" + votes + ") | RT: " + rtCritic + "% | RT aud: " + rtAudience + " | MC: " + metaCritic + "\r\n" + plot);
                             }
 
                             // Remove trailing pipe that sometimes occurs
@@ -336,7 +407,15 @@ namespace TrixieBot
                             //}
 
                             // Set referrer URI to grab IMDB poster
-                            protocol.SendImage(replyDestination, posterFull, imdbUrl, imdbUrl);
+                            if (poster == string.Empty)
+                            {
+                                protocol.SendPlainTextMessage(replyDestination, "No poster image found - " + imdbUrl);
+                            }
+                            else
+                            {
+                                protocol.SendImage(replyDestination, posterFull, imdbUrl, imdbUrl);
+                            }
+                            
                         }
                         break;
 
@@ -423,25 +502,24 @@ namespace TrixieBot
                         protocol.SendStatusTyping(replyDestination);
 
                         // Scrape it using AngleSharp
-                        var angleSharpConfig = Configuration.Default.WithDefaultLoader();
-                        var doc = BrowsingContext.New(angleSharpConfig).OpenAsync("https://playoverwatch.com/en-us/career/pc/us/" + body.Replace("#", "-")).Result;
+                        var overwatchDoc = BrowsingContext.New(angleSharpConfig).OpenAsync("https://playoverwatch.com/en-us/career/pc/us/" + body.Replace("#", "-")).Result;
                         string playerLevel = "0";
                         ushort parsedPlayerLevel = 0;
                         string competitiveRank = "0";
                         ushort parsedCompetitiveRank = 0;
                         var casual = new Dictionary<string, string>();
                         var competitive = new Dictionary<string, string>();
-                        if (ushort.TryParse(doc.QuerySelector("div.player-level div")?.TextContent, out parsedPlayerLevel))
+                        if (ushort.TryParse(overwatchDoc.QuerySelector("div.player-level div")?.TextContent, out parsedPlayerLevel))
                             playerLevel = parsedPlayerLevel.ToString();
-                        if (ushort.TryParse(doc.QuerySelector("div.competitive-rank div")?.TextContent, out parsedCompetitiveRank))
+                        if (ushort.TryParse(overwatchDoc.QuerySelector("div.competitive-rank div")?.TextContent, out parsedCompetitiveRank))
                             competitiveRank = parsedCompetitiveRank.ToString();
-                        foreach (var elem in doc.QuerySelector("#quick-play div[data-category-id='0x02E00000FFFFFFFF']").QuerySelectorAll("table.data-table tbody tr"))
+                        foreach (var elem in overwatchDoc.QuerySelector("#quick-play div[data-category-id='0x02E00000FFFFFFFF']").QuerySelectorAll("table.data-table tbody tr"))
                         {
                             if (casual.ContainsKey(elem.Children[0].TextContent))
                                 continue;
                             casual.Add(elem.Children[0].TextContent, elem.Children[1].TextContent);
                         }
-                        foreach (var elem in doc.QuerySelector("#competitive-play div[data-category-id='0x02E00000FFFFFFFF']").QuerySelectorAll("table.data-table tbody tr"))
+                        foreach (var elem in overwatchDoc.QuerySelector("#competitive-play div[data-category-id='0x02E00000FFFFFFFF']").QuerySelectorAll("table.data-table tbody tr"))
                         {
                             if (competitive.ContainsKey(elem.Children[0].TextContent))
                                 continue;
