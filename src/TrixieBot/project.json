@@ -19,7 +19,7 @@
     },
     "System.Xml.XmlDocument": "4.0.1",
     "System.Xml.XPath.XmlDocument": "4.0.1",
-    "Telegram.Bot": "10.3.1"
+    "Telegram.Bot": "10.4.0"
   },
 
   "frameworks": {
