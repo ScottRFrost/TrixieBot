@@ -488,9 +488,17 @@ namespace TrixieBot
                             break;
                         }
                         var rout = new Random();
-                        var iout = rout.Next(0, Enumerable.Count(dout.webcams));
-                        protocol.SendImage(replyDestination, (string)dout.webcams[iout].CURRENTIMAGEURL,
-                        (string)dout.webcams[iout].organization + " " + (string)dout.webcams[iout].neighborhood + " " + (string)dout.webcams[iout].city + ", " + (string)dout.webcams[iout].state + "\r\n" + (string)dout.webcams[iout].CAMURL);
+                        var numCams = Enumerable.Count(dout.webcams);
+                        var iout = rout.Next(0, numCams - 1);
+                        if (dout.webcams[iout] != null)
+                        {
+                            protocol.SendImage(replyDestination, (string)dout.webcams[iout].CURRENTIMAGEURL,
+                            (string)dout.webcams[iout].organization + " " + (string)dout.webcams[iout].neighborhood + " " + (string)dout.webcams[iout].city + ", " + (string)dout.webcams[iout].state + "\r\n" + (string)dout.webcams[iout].CAMURL);
+                        }
+                        else
+                        {
+                            protocol.SendPlainTextMessage(replyDestination, "You have disappointed Trixie.  \"" + body + "\" is bullshit and you know it.  Try \"City, ST\" or \"City, Country\" next time.");
+                        }
                         break;
 
                     case "/overwatch":
