@@ -22,6 +22,7 @@ namespace TrixieBot
         {
             // Read Configuration
             var telegramKey = keys["TelegramKey"];
+            var discordToken = keys["DiscordToken"];
 
             // Start Telegram
             Task<bool> telegram;
@@ -35,8 +36,21 @@ namespace TrixieBot
                 telegram = Task.FromResult(false);
             }
 
-            // Wait for all tasks to end
-            var taskResult = Task.WaitAny(telegram);
+            // Start Discord
+            Task<bool> discord;
+            if (discordToken != string.Empty)
+            {
+                var discordProtocol = new DiscordProtocol(keys);
+                discord = discordProtocol.Start();
+            }
+            else
+            {
+                discord = Task.FromResult(false);
+            }
+
+
+            // Wait for all tasks to end (which shouldn't ever happen)
+            Task.WaitAll(telegram, discord);
             return false;
         }
     }
