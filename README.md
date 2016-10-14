@@ -1,7 +1,9 @@
 # TrixieBot
-A multi-protocol chat bot for .NET Core
+A simple multi-protocol chat bot for .NET Core 1.0.1.
 
-The first protocol is Telegram via [Telegram.bot](https://github.com/MrRoundRobin/telegram.bot)
+Telegram implemented using [Telegram.bot](https://github.com/MrRoundRobin/telegram.bot)
 by [MrRoundRobin](https://github.com/MrRoundRobin)
 
-Please take a look at BaseProtocol.  I tried to make it as easy as possible to add new protocols.
+Discord implemented using [Discord.Net](https://github.com/RogueException/Discord.Net) by [RogueException](https://github.com/RogueException)
+
+Please take a look at BaseProtocol.  I tried to make it as easy as possible to add new protocols.  Implement a new one and send me a PR!
