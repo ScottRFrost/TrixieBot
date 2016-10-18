@@ -6,7 +6,7 @@ namespace TrixieBot
 {
     public class TrixieBot
     {
-        private IConfigurationSection keys;
+        IConfigurationSection keys;
 
         public TrixieBot()
         {

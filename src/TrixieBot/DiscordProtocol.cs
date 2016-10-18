@@ -9,7 +9,6 @@ namespace TrixieBot
     public class DiscordProtocol : BaseProtocol
     {
         DiscordSocketClient bot;
-        ISelfUser me;
 
         public DiscordProtocol(IConfigurationSection keys) : base(keys)
         {
@@ -37,13 +36,13 @@ namespace TrixieBot
             return true;
         }
 
-        private Task Log(LogMessage log)
+        Task Log(LogMessage log)
         {
             Console.WriteLine(log.ToString());
             return Task.CompletedTask;
         }
 
-        private Task MessageReceived(SocketMessage message)
+        Task MessageReceived(SocketMessage message)
         {
             Processor.TextMessage(this, keys, message.Channel.Id.ToString(), message.Content, message.Author.Username, message.Author.Username);
             return Task.CompletedTask;
@@ -58,7 +57,7 @@ namespace TrixieBot
             var stream = httpClient.DownloadData(Url).Result;
             if (filename == "")
             {
-                filename = Url.Substring(Url.LastIndexOf("/") + 1, 9999);
+                filename = Url.Substring(Url.LastIndexOf("/", StringComparison.Ordinal) + 1, 9999);
             }
             var channel = bot.GetChannel(Convert.ToUInt64(destination)) as IMessageChannel;
             channel.SendFileAsync(stream, filename);

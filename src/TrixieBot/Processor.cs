@@ -540,19 +540,19 @@ namespace TrixieBot
                             decimal elims = Convert.ToDecimal(competitive["Eliminations"].Replace(",", ""));
                             decimal assists = Convert.ToDecimal(competitive["Defensive Assists"].Replace(",", "")) + Convert.ToDecimal(competitive["Offensive Assists"].Replace(",", ""));
                             decimal deaths = Convert.ToDecimal(competitive["Deaths"].Replace(",", ""));
-                            stringBuilder.AppendLine("*Competitive Play - Rank " + competitiveRank + " *");
+                            stringBuilder.AppendLine("*Competitive Play - Rank " + competitiveRank + "*");
                             stringBuilder.AppendLine(wins + " W, " + (played - wins).ToString() + " L (" + Math.Round((wins / played) * 100, 2) + "%) in " + competitive["Time Played"] + " played");
                             stringBuilder.AppendLine(elims + " Elims, " + assists + " Assists, " + deaths + " Deaths (" + Math.Round(((elims + assists) / deaths), 2) + " KDA)");
                             stringBuilder.AppendLine(competitive["Cards"] + " Cards, " + competitive["Medals - Gold"] + " Gold, " + competitive["Medals - Silver"] + " Silver, " + competitive["Medals - Bronze"] + " Bronze\r\n");
 
                         }
                         decimal cwins = Convert.ToDecimal(casual["Games Won"].Replace(",", ""));
-                        decimal cplayed = Convert.ToDecimal(casual["Games Played"].Replace(",", ""));
+                        //decimal cplayed = Convert.ToDecimal(casual["Games Played"].Replace(",", "")); --- They took this out of casual stats for some reason
                         decimal celims = Convert.ToDecimal(casual["Eliminations"].Replace(",", ""));
                         decimal cassists = Convert.ToDecimal(casual["Defensive Assists"].Replace(",", "")) + Convert.ToDecimal(casual["Offensive Assists"].Replace(",", ""));
                         decimal cdeaths = Convert.ToDecimal(casual["Deaths"].Replace(",", ""));
-                        stringBuilder.AppendLine("*Filthy Casual Quick Play - Level " + playerLevel + " *");
-                        stringBuilder.AppendLine(cwins + " W, " + (cplayed - cwins).ToString() + " L (" + Math.Round((cwins / cplayed) * 100, 2) + "%) in " + casual["Time Played"] + " played");
+                        stringBuilder.AppendLine("*Filthy Casual Quick Play - Level " + playerLevel + "*");
+                        stringBuilder.AppendLine(cwins + " Wins in " + casual["Time Played"] + " played");
                         stringBuilder.AppendLine(celims + " Elims, " + cassists + " Assists, " + cdeaths + " Deaths (" + Math.Round(((celims + cassists) / cdeaths), 2) + " KDA)");
                         stringBuilder.AppendLine(casual["Cards"] + " Cards, " + casual["Medals - Gold"] + " Gold, " + casual["Medals - Silver"] + " Silver, " + casual["Medals - Bronze"] + " Bronze");
                         stringBuilder.AppendLine("https://playoverwatch.com/en-us/career/pc/us/" + body.Replace("#", "-"));

@@ -9,7 +9,7 @@
   },
 
   "dependencies": {
-    "AngleSharp": "0.9.7",
+    "AngleSharp": "0.9.9",
     "Discord.Net": "1.0.0-beta2-00428",
     "Microsoft.Extensions.Configuration": "1.0.0",
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
