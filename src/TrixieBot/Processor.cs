@@ -242,23 +242,26 @@ namespace TrixieBot
                             break;
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        httpClient.AuthorizationHeader = "Basic " + bingKey;
-                        dynamic dimg = JObject.Parse(httpClient.DownloadString("https://api.datamarket.azure.com/Data.ashx/Bing/Search/Image?Market=%27en-US%27&Adult=%27Moderate%27&Query=%27" + Uri.EscapeDataString(body) + "%27&$format=json&$top=3").Result);
-                        httpClient.AuthorizationHeader = string.Empty;
-                        if (dimg.d == null || dimg.d.results == null || Enumerable.Count(dimg.d.results) < 1)
+                        httpClient.BingHeader = bingKey;
+                        dynamic dimg = JObject.Parse(httpClient.DownloadString("https://api.cognitive.microsoft.com/bing/v5.0/images/search?mkt=en-us&count=3&q=" + Uri.EscapeDataString(body)).Result);
+                        httpClient.BingHeader = string.Empty;
+                        if (dimg == null || dimg.value == null || Enumerable.Count(dimg.value) < 1)
                         {
                             protocol.SendPlainTextMessage(replyDestination, "You have disappointed Trixie.  \"" + body + "\" is bullshit and you know it.  Try harder next time.");
                             break;
                         }
                         var rimg = new Random();
-                        var iimgmax = Enumerable.Count(dimg.d.results);
+                        var iimgmax = Enumerable.Count(dimg.value);
                         if (iimgmax > 3)
                         {
                             iimgmax = 3;
                         }
                         var iimg = rimg.Next(0, iimgmax);
-                        string imageUrl = dimg.d.results[iimg].MediaUrl.ToString();
-                        protocol.SendImage(replyDestination, imageUrl, imageUrl);
+                        string contentUrl = dimg.value[iimg].contentUrl.ToString();
+                        string contentName = dimg.value[iimg].name.ToString();
+                        var searchUrl = contentUrl.Substring(contentUrl.IndexOf("r=") + 2);
+                        searchUrl = Uri.UnescapeDataString(searchUrl.Substring(0, searchUrl.IndexOf("&")));
+                        protocol.SendImage(replyDestination, contentUrl, contentName + "\r\n" + searchUrl);
                         break;
 
                     case "/imdb":
@@ -272,18 +275,19 @@ namespace TrixieBot
                         protocol.SendStatusTyping(replyDestination);
 
                         // Search Bing
-                        httpClient.AuthorizationHeader = "Basic " + bingKey;
-                        dynamic dimdb = JObject.Parse(httpClient.DownloadString("https://api.datamarket.azure.com/Data.ashx/Bing/Search/Web?Market=%27en-US%27&Adult=%27Moderate%27&Query=%27site%3Aimdb.com%20" + Uri.EscapeDataString(body) + "%27&$format=json&$top=1").Result);
-                        httpClient.AuthorizationHeader = string.Empty;
-                        if (dimdb.d == null || dimdb.d.results == null ||
-                            Enumerable.Count(dimdb.d.results) < 1)
+                        httpClient.BingHeader = bingKey;
+                        dynamic dimdb = JObject.Parse(httpClient.DownloadString("https://api.cognitive.microsoft.com/bing/v5.0/search?mkt=en-us&responseFilter=webpages&count=1&q=site:imdb.com%20" + Uri.EscapeDataString(body)).Result);
+                        httpClient.BingHeader = string.Empty;
+                        if (dimdb == null || dimdb.webPages == null || Enumerable.Count(dimdb.webPages.value) < 1)
                         {
                             protocol.SendPlainTextMessage(replyDestination, "Trixie was unable to find a movie name matching: " + body);
                             break;
                         }
 
                         // Find correct /combined URL
-                        string imdbUrl = dimdb.d.results[0].Url;
+                        string imdbUrl = dimdb.webPages.value[0].url.ToString();
+                        imdbUrl = imdbUrl.Substring(imdbUrl.IndexOf("r=") + 2);
+                        imdbUrl = Uri.UnescapeDataString(imdbUrl.Substring(0, imdbUrl.IndexOf("&")));
                         imdbUrl = (imdbUrl.Replace("/business", "").Replace("/combined", "").Replace("/faq", "").Replace("/goofs", "").Replace("/news", "").Replace("/parentalguide", "").Replace("/quotes", "").Replace("/ratings", "").Replace("/synopsis", "").Replace("/trivia", "")); // + "/combined").Replace("//combined","/combined");
 
                         // Scrape it with AngleSharp
@@ -379,12 +383,12 @@ namespace TrixieBot
                         else
                         {
                             // Try for RT score scrape
-                            httpClient.AuthorizationHeader = "Basic " + bingKey;
-                            dynamic drt = JObject.Parse(httpClient.DownloadString("https://api.datamarket.azure.com/Data.ashx/Bing/Search/Web?Market=%27en-US%27&Adult=%27Moderate%27&Query=%27site%3Arottentomatoes.com%20" + Uri.EscapeDataString(body) + "%27&$format=json&$top=1").Result);
-                            httpClient.AuthorizationHeader = string.Empty;
-                            if (drt.d != null && drt.d.results != null && Enumerable.Count(drt.d.results) > 0)
+                            httpClient.BingHeader = bingKey;
+                            dynamic drt = JObject.Parse(httpClient.DownloadString("https://api.cognitive.microsoft.com/bing/v5.0/search?mkt=en-us&responseFilter=webpages&count=1&q=site:rottentomatoes.com%20" + Uri.EscapeDataString(body)).Result);
+                            httpClient.BingHeader = string.Empty;
+                            if (drt != null && drt.webPages != null && Enumerable.Count(drt.webPages.value) > 0)
                             {
-                                string rtUrl = drt.d.results[0].Url;
+                                string rtUrl = drt.webPages.value[0].url;
                                 var rt = httpClient.DownloadString(rtUrl).Result;
                                 //var rtCritic = Regex.Match(rt, @"<span class=""meter-value .*?<span>(.*?)</span>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
                                 var rtCritic = Regex.Match(rt, @"<span class=""meter-value superPageFontColor""><span>(.*?)</span>", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
@@ -459,18 +463,21 @@ namespace TrixieBot
                             break;
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        httpClient.AuthorizationHeader = "Basic " + bingKey;
-                        dynamic dgoog = JObject.Parse(httpClient.DownloadString("https://api.datamarket.azure.com/Data.ashx/Bing/Search/Web?Market=%27en-US%27&Adult=%27Moderate%27&Query=%27" + Uri.EscapeDataString(body) + "%27&$format=json&$top=1").Result);
-                        httpClient.AuthorizationHeader = string.Empty;
-                        if (dgoog.d == null || dgoog.d.results == null || Enumerable.Count(dgoog.d.results) < 1)
+                        httpClient.BingHeader = bingKey;
+                        dynamic dgoog = JObject.Parse(httpClient.DownloadString("https://api.cognitive.microsoft.com/bing/v5.0/search?mkt=en-us&responseFilter=webpages&count=3&q=" + Uri.EscapeDataString(body)).Result);
+                        httpClient.BingHeader = string.Empty;
+                        if (dgoog == null || dgoog.webPages == null || Enumerable.Count(dgoog.webPages.value) < 1)
                         {
                             protocol.SendPlainTextMessage(replyDestination, "You have disappointed Trixie.  \"" + body + "\" is bullshit and you know it.  Try harder next time.");
                         }
                         else
                         {
                             var rgoog = new Random();
-                            var igoog = rgoog.Next(0, Enumerable.Count(dgoog.d.results));
-                            string searchResult = dgoog.d.results[igoog].Title.ToString() + " | " + dgoog.d.results[igoog].Description.ToString() + "\r\n" + dgoog.d.results[igoog].Url;
+                            var igoog = rgoog.Next(0, Enumerable.Count(dgoog.webPages.value));
+                            var googUrl = dgoog.webPages.value[igoog].url.ToString();
+                            googUrl = googUrl.Substring(googUrl.IndexOf("r=") + 2);
+                            googUrl = Uri.UnescapeDataString(googUrl.Substring(0, googUrl.IndexOf("&")));
+                            string searchResult = dgoog.webPages.value[igoog].name.ToString() + " | " + dgoog.webPages.value[igoog].snippet.ToString() + "\r\n" + googUrl;
                             protocol.SendPlainTextMessage(replyDestination, searchResult);
                         }
                         break;
