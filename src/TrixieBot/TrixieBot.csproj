@@ -21,15 +21,13 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Discord.Net.WebSocket" Version="1.0.0-rc-00544" />
     <PackageReference Include="Microsoft.NET.Sdk">
       <Version>1.0.0-alpha-20161104-2</Version>
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="AngleSharp">
       <Version>0.9.9</Version>
-    </PackageReference>
-    <PackageReference Include="Discord.Net">
-      <Version>1.0.0-beta2-00428</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration">
       <Version>1.1.0</Version>
