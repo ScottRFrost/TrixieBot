@@ -9,8 +9,8 @@ namespace TrixieBot
 {
     public class TelegramProtocol : BaseProtocol
     {
-        TelegramBotClient bot;
-        User me;
+        private TelegramBotClient bot;
+        private User me;
 
         public TelegramProtocol(IConfigurationSection keys) : base(keys)
         {
@@ -21,7 +21,8 @@ namespace TrixieBot
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Telegram Protocol starting...");
             bot = new TelegramBotClient(keys["TelegramKey"]);
-            me = await bot.GetMeAsync();
+            me = await bot.GetMeAsync().ConfigureAwait(false);
+            await bot.LeaveChatAsync(-166628).ConfigureAwait(false);
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + me.Username + " started at " + DateTime.Now);
 
             var offset = 0;
@@ -30,7 +31,7 @@ namespace TrixieBot
                 var updates = new Update[0];
                 try
                 {
-                    updates = await bot.GetUpdatesAsync(offset);
+                    updates = await bot.GetUpdatesAsync(offset).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {
@@ -63,7 +64,7 @@ namespace TrixieBot
                         Console.WriteLine("ERROR WHILE PROCESSING:\r\n" + ex);
                     }
                 }
-                await Task.Delay(1000);
+                await Task.Delay(1000).ConfigureAwait(false);
             }
         }
 
@@ -71,10 +72,12 @@ namespace TrixieBot
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + Url);
             SendStatusTyping(destination);
-            var httpClient = new ProHttpClient();
-            httpClient.ReferrerUri = referrer;
+            var httpClient = new ProHttpClient()
+            {
+                ReferrerUri = referrer
+            };
             var stream = httpClient.DownloadData(Url).Result;
-            if (filename == "")
+            if (filename?.Length == 0)
             {
                 filename = Url.Substring(Url.LastIndexOf("/") + 1, 9999);
             }
@@ -88,8 +91,10 @@ namespace TrixieBot
             SendStatusTyping(destination);
             try
             {
-                var httpClient = new ProHttpClient();
-                httpClient.ReferrerUri = referrer;
+                var httpClient = new ProHttpClient()
+                {
+                    ReferrerUri = referrer
+                };
                 var stream = httpClient.DownloadData(Url).Result;
                 var extension = ".jpg";
                 if (Url.Contains(".gif") || Url.Contains("image/gif"))
@@ -116,7 +121,7 @@ namespace TrixieBot
                 }
                 else
                 {
-                    bot.SendPhotoAsync(destination, photo, caption == string.Empty ? Url : caption);
+                    bot.SendPhotoAsync(destination, photo, caption?.Length == 0 ? Url : caption);
                 }
             }
             catch (System.Net.Http.HttpRequestException ex)

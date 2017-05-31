@@ -797,7 +797,7 @@ namespace TrixieBot
 
                     case "/version":
                     case "/about":
-                        protocol.SendPlainTextMessage(replyDestination, "Trixie Is Best Pony Bot\r\nRelease fourty-two for .NET Core 1.0\r\nBy http://scottrfrost.github.io");
+                        protocol.SendPlainTextMessage(replyDestination, "Trixie Is Best Pony Bot\r\nRelease fourty-two for .NET Core 1.1.x\r\nBy http://scottrfrost.github.io");
                         break;
 
                     case "/weather":

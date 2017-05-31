@@ -6,7 +6,7 @@ namespace TrixieBot
 {
     public class TrixieBot
     {
-        IConfigurationSection keys;
+        private readonly IConfigurationSection keys;
 
         public TrixieBot()
         {
@@ -47,7 +47,6 @@ namespace TrixieBot
             {
                 discord = Task.FromResult(false);
             }
-
 
             // Wait for all tasks to end (which shouldn't ever happen)
             Task.WaitAll(telegram, discord);

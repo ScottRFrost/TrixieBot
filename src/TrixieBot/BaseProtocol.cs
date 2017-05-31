@@ -7,7 +7,7 @@ namespace TrixieBot
     {
         public IConfigurationSection keys;
 
-        public BaseProtocol(IConfigurationSection keys)
+        protected BaseProtocol(IConfigurationSection keys)
         {
             this.keys = keys;
         }

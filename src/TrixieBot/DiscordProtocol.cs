@@ -8,7 +8,7 @@ namespace TrixieBot
 {
     public class DiscordProtocol : BaseProtocol
     {
-        DiscordSocketClient bot;
+        private DiscordSocketClient bot;
 
         public DiscordProtocol(IConfigurationSection keys) : base(keys)
         {
@@ -30,19 +30,19 @@ namespace TrixieBot
             bot.MessageReceived += MessageReceived;
 
             // Log in
-            await bot.LoginAsync(TokenType.Bot, keys["DiscordToken"]);
-            await bot.ConnectAsync();
-            await Task.Delay(-1); // Just wait forever
+            await bot.LoginAsync(TokenType.Bot, keys["DiscordToken"]).ConfigureAwait(false);
+            await bot.StartAsync().ConfigureAwait(false);
+            await Task.Delay(-1).ConfigureAwait(false); // Just wait forever
             return true;
         }
 
-        Task Log(LogMessage log)
+        private Task Log(LogMessage log)
         {
             Console.WriteLine(log.ToString());
             return Task.CompletedTask;
         }
 
-        Task MessageReceived(SocketMessage message)
+        private Task MessageReceived(SocketMessage message)
         {
             Processor.TextMessage(this, keys, message.Channel.Id.ToString(), message.Content, message.Author.Username, message.Author.Username);
             return Task.CompletedTask;
@@ -52,10 +52,12 @@ namespace TrixieBot
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + Url);
             SendStatusTyping(destination);
-            var httpClient = new ProHttpClient();
-            httpClient.ReferrerUri = referrer;
+            var httpClient = new ProHttpClient()
+            {
+                ReferrerUri = referrer
+            };
             var stream = httpClient.DownloadData(Url).Result;
-            if (filename == "")
+            if (filename?.Length == 0)
             {
                 filename = Url.Substring(Url.LastIndexOf("/", StringComparison.Ordinal) + 1, 9999);
             }
@@ -69,8 +71,10 @@ namespace TrixieBot
             SendStatusTyping(destination);
             try
             {
-                var httpClient = new ProHttpClient();
-                httpClient.ReferrerUri = referrer;
+                var httpClient = new ProHttpClient()
+                {
+                    ReferrerUri = referrer
+                };
                 var stream = httpClient.DownloadData(Url).Result;
                 var channel = bot.GetChannel(Convert.ToUInt64(destination)) as IMessageChannel;
                 var extension = ".jpg";
