@@ -669,30 +669,33 @@ namespace TrixieBot
                         break;
 
                     case "/stock":
+                        body = body.ToUpperInvariant();
                         if (body.Length < 1 || body.Length > 5)
                         {
-                            body = "^DJI";
+                            body = ".DJI";
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        protocol.SendImage(replyDestination, "https://chart.yahoo.com/t?s=" + body + "&lang=en-US&region=US&width=1200&height=765", "Chart for " + body + " as of " + DateTime.Now.ToString("MM/dd/yyy HH:mm:ss"));
+                        protocol.SendImage(replyDestination, "https://app.quotemedia.com/quotetools/getChart?webmasterId=102684&snap=true&symbol=" + body + "&chscale=1d&chtype=AreaChart&chwid=1280&chhig=720&chfill=ffac6a&chfill2=febf8b&chln=fe9540&chmrg=0&chfrmon=false&chton=false&chbg=ffffff&chdon=false&chgrdon=true&chbdron=true&chbgch=ffffff&chcpy=ffffff&chtcol=ffffff", "Chart for " + body + " as of " + DateTime.Now.ToString("MM/dd/yyy HH:mm:ss"));
                         break;
 
                     case "/stock5":
+                        body = body.ToUpperInvariant();
                         if (body.Length < 1 || body.Length > 5)
                         {
-                            body = "^DJI";
+                            body = ".DJI";
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        protocol.SendImage(replyDestination, "https://chart.yahoo.com/w?s=" + body + "&lang=en-US&region=US&width=1200&height=765", "5 day chart for " + body + " as of " + DateTime.Now.ToString("MM/dd/yyy HH:mm:ss"));
+                        protocol.SendImage(replyDestination, "https://app.quotemedia.com/quotetools/getChart?webmasterId=102684&snap=true&symbol=" + body + "&chscale=5d&chtype=AreaChart&chwid=1280&chhig=720&chfill=ffac6a&chfill2=febf8b&chln=fe9540&chmrg=0&chfrmon=false&chton=false&chbg=ffffff&chdon=false&chgrdon=true&chbdron=true&chbgch=ffffff&chcpy=ffffff&chtcol=ffffff", "Chart for " + body + " as of " + DateTime.Now.ToString("MM/dd/yyy HH:mm:ss"));
                         break;
 
                     case "/stockyear":
+                        body = body.ToUpperInvariant();
                         if (body.Length < 1 || body.Length > 5)
                         {
-                            body = "^DJI";
+                            body = ".DJI";
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        protocol.SendImage(replyDestination, "https://chart.yahoo.com/c/1y/" + body, "Year chart for " + body + " as of " + DateTime.Now.ToString("MM/dd/yyy HH:mm:ss"));
+                        protocol.SendImage(replyDestination, "https://app.quotemedia.com/quotetools/getChart?webmasterId=102684&snap=true&symbol=" + body + "&chscale=1y&chtype=AreaChart&chwid=1280&chhig=720&chfill=ffac6a&chfill2=febf8b&chln=fe9540&chmrg=0&chfrmon=false&chton=false&chbg=ffffff&chdon=false&chgrdon=true&chbdron=true&chbgch=ffffff&chcpy=ffffff&chtcol=ffffff", "Chart for " + body + " as of " + DateTime.Now.ToString("MM/dd/yyy HH:mm:ss"));
                         break;
 
                     case "/translateto":
