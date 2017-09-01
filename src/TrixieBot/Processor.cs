@@ -24,11 +24,10 @@ namespace TrixieBot
             var bingKey = keys["BingKey"];
             var wolframAppId = keys["WolframAppID"];
             var battleNetKey = keys["BattleNetKey"];
-            var coinBaseAPIKey = keys["CoinBaseAPIKey"];
-            var coinBaseAPISecret = keys["CoinBaseAPISecret"];
             var httpClient = new ProHttpClient();
             var stringBuilder = new StringBuilder();
             var angleSharpConfig = Configuration.Default.WithDefaultLoader();
+            var epoch = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
 
             // Log to console
             Console.WriteLine(replyDestination + " < " + replyUsername + " - " + text);
@@ -103,13 +102,63 @@ namespace TrixieBot
                         protocol.SendPlainTextMessage(replyDestination, stringBuilder.ToString());
                         break;
 
+                    case "/bittrex":
+                        var bittrexAPIKey = keys["BittrexAPIKey"];
+                        var bittrexAPISecret = keys["BittrexAPISecret"];
+                        protocol.SendStatusTyping(replyDestination);
+                        var bittrexHttp = new System.Net.Http.HttpClient(); // Not sure why, but the default Http client wasn't working
+
+                        // Find value of BTC in USD
+                        dynamic dbittrexUsd = JObject.Parse(bittrexHttp.GetStringAsync("https://bittrex.com/api/v1.1/public/getticker?market=USDT-BTC").Result);
+                        var bittrexBTC = (decimal)dbittrexUsd.result.Last;
+
+                        // Build signature
+                        var bittrexUrl = "https://bittrex.com/api/v1.1/account/getbalances?apikey=" + bittrexAPIKey + "&nonce=" + epoch;
+                        var bithmacKey = Encoding.UTF8.GetBytes(bittrexAPISecret);
+                        var bitutf8Bytes = Encoding.UTF8.GetBytes(bittrexUrl);
+                        var bithmac = new HMACSHA512(bithmacKey);
+                        var bithex = bithmac.ComputeHash(bitutf8Bytes);
+                        var bitsb = new StringBuilder();
+                        for (int i = 0; i < bithex.Length; i++)
+                        {
+                            bitsb.Append(bithex[i].ToString("x2"));
+                        }
+                        bittrexHttp.DefaultRequestHeaders.Add("apisign", bitsb.ToString());
+                        dynamic dbittrex= JObject.Parse(bittrexHttp.GetStringAsync(bittrexUrl).Result);
+                        var numBittrex = Enumerable.Count(dbittrex.result);
+                        var sbBittrex = new StringBuilder();
+                        for (var thisCoin = 0; thisCoin < numBittrex; thisCoin++)
+                        {
+                            if ((decimal)dbittrex.result[thisCoin].Balance != 0)
+                            {
+                                // Get coin info
+                                var coinName = (string)dbittrex.result[thisCoin].Currency;
+                                var coinBalance = (decimal)dbittrex.result[thisCoin].Balance;
+
+                                // Find value in USD
+                                if (coinName == "BTC")
+                                {
+                                    sbBittrex.AppendLine(coinName + ": " + coinBalance + " ($" + Math.Round(coinBalance * bittrexBTC, 2) + ")");
+                                }
+                                else 
+                                {
+                                    dynamic dbittrexCoin = JObject.Parse(bittrexHttp.GetStringAsync("https://bittrex.com/api/v1.1/public/getticker?market=BTC-" + coinName).Result);
+                                    var coinValue = (decimal)dbittrexCoin.result.Last;
+                                    sbBittrex.AppendLine(coinName + ": " + coinBalance + " = " + Math.Round(coinBalance * coinValue, 7) + " BTC ($" + Math.Round(coinBalance * coinValue * bittrexBTC, 2) + ")");
+                                }
+                            }
+                        }
+                        protocol.SendPlainTextMessage(replyDestination, sbBittrex.ToString());
+                        break;
+
                     case "/cat":
                         protocol.SendImage(replyDestination, "http://thecatapi.com/api/images/get?format=src&type=jpg,png", "Cat");
                         break;
 
                     case "/coinbase":
+                        var coinBaseAPIKey = keys["CoinBaseAPIKey"];
+                        var coinBaseAPISecret = keys["CoinBaseAPISecret"];
                         protocol.SendStatusTyping(replyDestination);
-                        var epoch = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
                         var coinbaseHttp = new System.Net.Http.HttpClient(); // Not sure why, but the default Http client wasn't working
                         coinbaseHttp.DefaultRequestHeaders.Add("CB-ACCESS-KEY", coinBaseAPIKey);
                         coinbaseHttp.DefaultRequestHeaders.Add("CB-ACCESS-TIMESTAMP", epoch);
