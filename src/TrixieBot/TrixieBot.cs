@@ -49,7 +49,7 @@ namespace TrixieBot
             }
 
             // Wait for all tasks to end (which shouldn't ever happen)
-            Task.WaitAll(telegram, discord);
+            await Task.WhenAll(telegram, discord);
             return false;
         }
     }

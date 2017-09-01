@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Security.Cryptography;
+using System.IO;
 
 namespace TrixieBot
 {
@@ -22,6 +24,8 @@ namespace TrixieBot
             var bingKey = keys["BingKey"];
             var wolframAppId = keys["WolframAppID"];
             var battleNetKey = keys["BattleNetKey"];
+            var coinBaseAPIKey = keys["CoinBaseAPIKey"];
+            var coinBaseAPISecret = keys["CoinBaseAPISecret"];
             var httpClient = new ProHttpClient();
             var stringBuilder = new StringBuilder();
             var angleSharpConfig = Configuration.Default.WithDefaultLoader();
@@ -101,6 +105,38 @@ namespace TrixieBot
 
                     case "/cat":
                         protocol.SendImage(replyDestination, "http://thecatapi.com/api/images/get?format=src&type=jpg,png", "Cat");
+                        break;
+
+                    case "/coinbase":
+                        protocol.SendStatusTyping(replyDestination);
+                        var epoch = Math.Floor((DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
+                        var coinbaseHttp = new System.Net.Http.HttpClient(); // Not sure why, but the default Http client wasn't working
+                        coinbaseHttp.DefaultRequestHeaders.Add("CB-ACCESS-KEY", coinBaseAPIKey);
+                        coinbaseHttp.DefaultRequestHeaders.Add("CB-ACCESS-TIMESTAMP", epoch);
+                        coinbaseHttp.DefaultRequestHeaders.Add("CB-VERSION", "2017-05-15");
+
+                        // Build signature
+                        var hmacKey = Encoding.UTF8.GetBytes(coinBaseAPISecret);
+                        var utf8Bytes = Encoding.UTF8.GetBytes(epoch + "GET/v2/accounts");
+                        var hmac = new HMACSHA256(hmacKey);
+                        var hex = hmac.ComputeHash(utf8Bytes);
+                        var sb = new StringBuilder();
+                        for (int i = 0; i < hex.Length; i++)
+                        {
+                            sb.Append(hex[i].ToString("x2"));
+                        }
+                        coinbaseHttp.DefaultRequestHeaders.Add("CB-ACCESS-SIGN", sb.ToString());
+                        dynamic dcoinbase = JObject.Parse(coinbaseHttp.GetStringAsync("https://api.coinbase.com/v2/accounts").Result);
+                        var numCoins = Enumerable.Count(dcoinbase.data);
+                        var sbCoins = new StringBuilder();
+                        for (var thisCoin = 0; thisCoin < numCoins; thisCoin++)
+                        {
+                            if ((decimal)dcoinbase.data[thisCoin].balance.amount != 0)
+                            {
+                                sbCoins.AppendLine((string)dcoinbase.data[thisCoin].name + ": " + (decimal)dcoinbase.data[thisCoin].balance.amount + " ($" + (decimal)dcoinbase.data[thisCoin].native_balance.amount + ")");
+                            }
+                        }
+                        protocol.SendPlainTextMessage(replyDestination, sbCoins.ToString());
                         break;
 
                     case "/doge":
@@ -800,7 +836,7 @@ namespace TrixieBot
 
                     case "/version":
                     case "/about":
-                        protocol.SendPlainTextMessage(replyDestination, "Trixie Is Best Pony Bot\r\nRelease fourty-two for .NET Core 1.1.x\r\nBy http://scottrfrost.github.io");
+                        protocol.SendPlainTextMessage(replyDestination, "Trixie Is Best Pony Bot\r\nRelease fourty-two for .NET Core 2.x\r\nBy http://scottrfrost.github.io");
                         break;
 
                     case "/weather":
