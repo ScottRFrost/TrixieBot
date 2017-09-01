@@ -22,7 +22,6 @@ namespace TrixieBot
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Telegram Protocol starting...");
             bot = new TelegramBotClient(keys["TelegramKey"]);
             me = await bot.GetMeAsync().ConfigureAwait(false);
-            await bot.LeaveChatAsync(-166628).ConfigureAwait(false);
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + me.Username + " started at " + DateTime.Now);
 
             var offset = 0;
