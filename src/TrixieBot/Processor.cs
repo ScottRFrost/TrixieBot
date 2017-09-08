@@ -127,6 +127,7 @@ namespace TrixieBot
                         dynamic dbittrex= JObject.Parse(bittrexHttp.GetStringAsync(bittrexUrl).Result);
                         var numBittrex = Enumerable.Count(dbittrex.result);
                         var sbBittrex = new StringBuilder();
+                        var bittrexTotal = 0.0M;
                         for (var thisCoin = 0; thisCoin < numBittrex; thisCoin++)
                         {
                             if ((decimal)dbittrex.result[thisCoin].Balance != 0)
@@ -139,15 +140,18 @@ namespace TrixieBot
                                 if (coinName == "BTC")
                                 {
                                     sbBittrex.AppendLine(coinName + ": " + coinBalance + " ($" + Math.Round(coinBalance * bittrexBTC, 2) + ")");
+                                    bittrexTotal += Math.Round(coinBalance * bittrexBTC, 2);
                                 }
                                 else 
                                 {
                                     dynamic dbittrexCoin = JObject.Parse(bittrexHttp.GetStringAsync("https://bittrex.com/api/v1.1/public/getticker?market=BTC-" + coinName).Result);
                                     var coinValue = (decimal)dbittrexCoin.result.Last;
                                     sbBittrex.AppendLine(coinName + ": " + coinBalance + " = " + Math.Round(coinBalance * coinValue, 7) + " BTC ($" + Math.Round(coinBalance * coinValue * bittrexBTC, 2) + ")");
+                                    bittrexTotal += Math.Round(coinBalance * coinValue * bittrexBTC, 2);
                                 }
                             }
                         }
+                        sbBittrex.AppendLine("USD Total: $" + bittrexTotal.ToString());
                         protocol.SendPlainTextMessage(replyDestination, sbBittrex.ToString());
                         break;
 
@@ -178,13 +182,16 @@ namespace TrixieBot
                         dynamic dcoinbase = JObject.Parse(coinbaseHttp.GetStringAsync("https://api.coinbase.com/v2/accounts").Result);
                         var numCoins = Enumerable.Count(dcoinbase.data);
                         var sbCoins = new StringBuilder();
+                        var coinBaseTotal = 0.0M;
                         for (var thisCoin = 0; thisCoin < numCoins; thisCoin++)
                         {
                             if ((decimal)dcoinbase.data[thisCoin].balance.amount != 0)
                             {
                                 sbCoins.AppendLine((string)dcoinbase.data[thisCoin].name + ": " + (decimal)dcoinbase.data[thisCoin].balance.amount + " ($" + (decimal)dcoinbase.data[thisCoin].native_balance.amount + ")");
+                                coinBaseTotal += (decimal)dcoinbase.data[thisCoin].native_balance.amount;
                             }
                         }
+                        sbCoins.AppendLine("USD Total: $" + coinBaseTotal.ToString());
                         protocol.SendPlainTextMessage(replyDestination, sbCoins.ToString());
                         break;
 
