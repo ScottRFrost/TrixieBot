@@ -1,15 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace TrixieBot
 {
     public abstract class BaseProtocol
     {
-        public IConfigurationSection keys;
+        public Config config;
 
-        protected BaseProtocol(IConfigurationSection keys)
+        protected BaseProtocol(Config config)
         {
-            this.keys = keys;
+            this.config = config;
         }
 
         abstract public Task<bool> Start();

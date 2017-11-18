@@ -1,5 +1,4 @@
 ﻿using AngleSharp;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -8,22 +7,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Security.Cryptography;
-using System.IO;
 
 namespace TrixieBot
 {
     public static class Processor
     {
-        enum wowRaces { Human = 1, Orc = 2, Dwarf = 3, Night_Elf = 4, Undead = 5, Tauren = 6, Gnome = 7, Troll = 8, Goblin = 9, Blood_Elf = 10, Draenei = 11, Worgen = 22, Neutral_Pandaren = 24, Alliance_Pandaren = 25, Horde_Pandaren = 26 };
-        enum wowClasses { Warrior = 1, Paladin = 2, Hunter = 3, Rogue = 4, Priest = 5, Death_Knight = 6, Shaman = 7, Mage = 8, Warlock = 9, Monk = 10, Druid = 11, Demon_Hunter = 12}
+        enum WowRaces { Human = 1, Orc = 2, Dwarf = 3, Night_Elf = 4, Undead = 5, Tauren = 6, Gnome = 7, Troll = 8, Goblin = 9, Blood_Elf = 10, Draenei = 11, Worgen = 22, Neutral_Pandaren = 24, Alliance_Pandaren = 25, Horde_Pandaren = 26 };
+        enum WowClasses { Warrior = 1, Paladin = 2, Hunter = 3, Rogue = 4, Priest = 5, Death_Knight = 6, Shaman = 7, Mage = 8, Warlock = 9, Monk = 10, Druid = 11, Demon_Hunter = 12}
 
-        public static void TextMessage(BaseProtocol protocol, IConfigurationSection keys, string replyDestination, string text, string replyUsername = "", string replyFullname = "", string replyMessage = "")
+        public static void TextMessage(BaseProtocol protocol, Config config, string replyDestination, string text, string replyUsername = "", string replyFullname = "", string replyMessage = "")
         {
-            // Read Configuration Keys
-            var wundergroundKey = keys["WundergroundKey"];
-            var bingKey = keys["BingKey"];
-            var wolframAppId = keys["WolframAppID"];
-            var battleNetKey = keys["BattleNetKey"];
+            // Set up 
             var httpClient = new ProHttpClient();
             var stringBuilder = new StringBuilder();
             var angleSharpConfig = Configuration.Default.WithDefaultLoader();
@@ -103,8 +97,8 @@ namespace TrixieBot
                         break;
 
                     case "/bittrex":
-                        var bittrexAPIKey = keys["BittrexAPIKey"];
-                        var bittrexAPISecret = keys["BittrexAPISecret"];
+                        var bittrexAPIKey = config.Keys.BittrexAPIKey;
+                        var bittrexAPISecret = config.Keys.BittrexAPISecret;
                         protocol.SendStatusTyping(replyDestination);
                         var bittrexHttp = new System.Net.Http.HttpClient(); // Not sure why, but the default Http client wasn't working
 
@@ -160,8 +154,8 @@ namespace TrixieBot
                         break;
 
                     case "/coinbase":
-                        var coinBaseAPIKey = keys["CoinBaseAPIKey"];
-                        var coinBaseAPISecret = keys["CoinBaseAPISecret"];
+                        var coinBaseAPIKey = config.Keys.CoinBaseAPIKey;
+                        var coinBaseAPISecret = config.Keys.CoinBaseAPISecret;
                         protocol.SendStatusTyping(replyDestination);
                         var coinbaseHttp = new System.Net.Http.HttpClient(); // Not sure why, but the default Http client wasn't working
                         coinbaseHttp.DefaultRequestHeaders.Add("CB-ACCESS-KEY", coinBaseAPIKey);
@@ -279,7 +273,7 @@ namespace TrixieBot
                         }
 
                         protocol.SendStatusTyping(replyDestination);
-                        dynamic dfor = JObject.Parse(httpClient.DownloadString("http://api.wunderground.com/api/" + wundergroundKey + "/forecast/q/" + body + ".json").Result);
+                        dynamic dfor = JObject.Parse(httpClient.DownloadString("http://api.wunderground.com/api/" + config.Keys.WundergroundKey + "/forecast/q/" + body + ".json").Result);
                         if (dfor.forecast == null || dfor.forecast.txt_forecast == null)
                         {
                             protocol.SendPlainTextMessage(replyDestination, "You have disappointed Trixie.  \"" + body + "\" is bullshit and you know it.  Try \"City, ST\" or \"City, Country\" next time.");
@@ -334,7 +328,7 @@ namespace TrixieBot
                             break;
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        httpClient.BingHeader = bingKey;
+                        httpClient.BingHeader = config.Keys.BingKey;
                         dynamic dimg = JObject.Parse(httpClient.DownloadString("https://api.cognitive.microsoft.com/bing/v5.0/images/search?mkt=en-us&count=3&q=" + Uri.EscapeDataString(body)).Result);
                         httpClient.BingHeader = string.Empty;
                         if (dimg == null || dimg.value == null || Enumerable.Count(dimg.value) < 1)
@@ -367,7 +361,7 @@ namespace TrixieBot
                         protocol.SendStatusTyping(replyDestination);
 
                         // Search Bing
-                        httpClient.BingHeader = bingKey;
+                        httpClient.BingHeader = config.Keys.BingKey;
                         dynamic dimdb = JObject.Parse(httpClient.DownloadString("https://api.cognitive.microsoft.com/bing/v5.0/search?mkt=en-us&responseFilter=webpages&count=1&q=site:imdb.com%20" + Uri.EscapeDataString(body)).Result);
                         httpClient.BingHeader = string.Empty;
                         if (dimdb == null || dimdb.webPages == null || Enumerable.Count(dimdb.webPages.value) < 1)
@@ -475,7 +469,7 @@ namespace TrixieBot
                         else
                         {
                             // Try for RT score scrape
-                            httpClient.BingHeader = bingKey;
+                            httpClient.BingHeader = config.Keys.BingKey;
                             dynamic drt = JObject.Parse(httpClient.DownloadString("https://api.cognitive.microsoft.com/bing/v5.0/search?mkt=en-us&responseFilter=webpages&count=1&q=site:rottentomatoes.com%20" + Uri.EscapeDataString(body)).Result);
                             httpClient.BingHeader = string.Empty;
                             if (drt != null && drt.webPages != null && Enumerable.Count(drt.webPages.value) > 0)
@@ -555,7 +549,7 @@ namespace TrixieBot
                             break;
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        httpClient.BingHeader = bingKey;
+                        httpClient.BingHeader = config.Keys.BingKey;
                         dynamic dgoog = JObject.Parse(httpClient.DownloadString("https://api.cognitive.microsoft.com/bing/v5.0/search?mkt=en-us&responseFilter=webpages&count=3&q=" + Uri.EscapeDataString(body)).Result);
                         httpClient.BingHeader = string.Empty;
                         if (dgoog == null || dgoog.webPages == null || Enumerable.Count(dgoog.webPages.value) < 1)
@@ -580,7 +574,7 @@ namespace TrixieBot
                             body = "Cincinnati, OH";
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        dynamic dout = JObject.Parse(httpClient.DownloadString("http://api.wunderground.com/api/" + wundergroundKey + "/webcams/q/" + body + ".json").Result);
+                        dynamic dout = JObject.Parse(httpClient.DownloadString("http://api.wunderground.com/api/" + config.Keys.WundergroundKey + "/webcams/q/" + body + ".json").Result);
                         if (dout.webcams == null)
                         {
                             protocol.SendPlainTextMessage(replyDestination, "You have disappointed Trixie.  \"" + body + "\" is bullshit and you know it.  Try \"City, ST\" or \"City, Country\" next time.");
@@ -692,7 +686,7 @@ namespace TrixieBot
                         {
                             body = "Cincinnati, OH";
                         }
-                        protocol.SendFile(replyDestination, "http://api.wunderground.com/api/" + wundergroundKey + "/animatedradar/q/" + body + ".gif?newmaps=1&num=15&width=1024&height=1024", "Radar.gif");
+                        protocol.SendFile(replyDestination, "http://api.wunderground.com/api/" + config.Keys.WundergroundKey + "/animatedradar/q/" + body + ".gif?newmaps=1&num=15&width=1024&height=1024", "Radar.gif");
                         break;
 
                     //case "/remind":
@@ -748,7 +742,7 @@ namespace TrixieBot
                             body = "Cincinnati, OH";
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        dynamic rsat = JObject.Parse(httpClient.DownloadString("http://api.wunderground.com/api/" + wundergroundKey + "/satellite/q/" + body + ".json").Result);
+                        dynamic rsat = JObject.Parse(httpClient.DownloadString("http://api.wunderground.com/api/" + config.Keys.WundergroundKey + "/satellite/q/" + body + ".json").Result);
                         if (rsat.satellite == null || rsat.satellite.image_url == null)
                         {
                             protocol.SendPlainTextMessage(replyDestination, "You have disappointed Trixie.  \"" + body + "\" is bullshit and you know it.  Try \"City, ST\" or \"City, Country\" next time.");
@@ -799,7 +793,7 @@ namespace TrixieBot
                         protocol.SendStatusTyping(replyDestination);
                         var lang = body.Substring(0, body.IndexOf(" ", StringComparison.Ordinal));
                         var query = body.Substring(body.IndexOf(" ", StringComparison.Ordinal) + 1);
-                        httpClient.AuthorizationHeader = "Basic " + bingKey;
+                        httpClient.AuthorizationHeader = "Basic " + config.Keys.BingKey;
                         dynamic dtto = JObject.Parse(httpClient.DownloadString("https://api.datamarket.azure.com/Bing/MicrosoftTranslator/v1/Translate?Text=%27" + Uri.EscapeDataString(query) + "%27&To=%27" + lang + "%27&$format=json").Result);
                         httpClient.AuthorizationHeader = string.Empty;
                         if (dtto.d == null || dtto.d.results == null || Enumerable.Count(dtto.d.results) < 1 || dtto.d.results[0].Text == null)
@@ -819,7 +813,7 @@ namespace TrixieBot
                             break;
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        httpClient.AuthorizationHeader = "Basic " + bingKey;
+                        httpClient.AuthorizationHeader = "Basic " + config.Keys.BingKey;
                         dynamic dtrans = JObject.Parse(httpClient.DownloadString("https://api.datamarket.azure.com/Bing/MicrosoftTranslator/v1/Translate?Text=%27" + Uri.EscapeDataString(body) + "%27&To=%27en%27&$format=json").Result);
                         httpClient.AuthorizationHeader = string.Empty;
                         if (dtrans.d == null || dtrans.d.results == null || Enumerable.Count(dtrans.d.results) < 1 || dtrans.d.results[0].Text == null)
@@ -840,7 +834,7 @@ namespace TrixieBot
                         }
                         protocol.SendStatusTyping(replyDestination);
                         var xmlDoc = new XmlDocument();
-                        xmlDoc.LoadXml(httpClient.DownloadString("http://api.wolframalpha.com/v2/query?input=" + Uri.EscapeDataString(body) + "&appid=" + wolframAppId).Result);
+                        xmlDoc.LoadXml(httpClient.DownloadString("http://api.wolframalpha.com/v2/query?input=" + Uri.EscapeDataString(body) + "&appid=" + config.Keys.WolframAppID).Result);
                         var queryResult = xmlDoc.SelectSingleNode("/queryresult");
                         if (queryResult == null || queryResult?.Attributes == null || queryResult.Attributes?["success"] == null || queryResult.Attributes?["success"].Value != "true")
                         {
@@ -901,7 +895,7 @@ namespace TrixieBot
                             body = "Cincinnati, OH";
                         }
                         protocol.SendStatusTyping(replyDestination);
-                        dynamic dwthr = JObject.Parse(httpClient.DownloadString("http://api.wunderground.com/api/" + wundergroundKey + "/conditions/q/" + body + ".json").Result);
+                        dynamic dwthr = JObject.Parse(httpClient.DownloadString("http://api.wunderground.com/api/" + config.Keys.WundergroundKey + "/conditions/q/" + body + ".json").Result);
                         if (dwthr.current_observation == null)
                         {
                             protocol.SendPlainTextMessage(replyDestination, "You have disappointed Trixie.  \"" + body + "\" is bullshit and you know it.  Try \"City, ST\" or \"City, Country\" next time.");
@@ -950,7 +944,7 @@ namespace TrixieBot
                         }
 
                         protocol.SendStatusTyping(replyDestination);
-                        dynamic dwow = JObject.Parse(httpClient.DownloadString("https://us.api.battle.net/wow/character/" + Uri.EscapeDataString(args[1]) + "/" + Uri.EscapeDataString(args[0]) + "?fields=pvp%2Cstats%2Ctitles%2Citems&locale=en_US&apikey=" + battleNetKey).Result);
+                        dynamic dwow = JObject.Parse(httpClient.DownloadString("https://us.api.battle.net/wow/character/" + Uri.EscapeDataString(args[1]) + "/" + Uri.EscapeDataString(args[0]) + "?fields=pvp%2Cstats%2Ctitles%2Citems&locale=en_US&apikey=" + config.Keys.BattleNetKey).Result);
                         string wowName = dwow.name;
                         foreach(var wowTitle in dwow.titles)
                         {
@@ -963,7 +957,7 @@ namespace TrixieBot
 
                         if (dwow.name != null)
                         {
-                            stringBuilder.AppendLine(wowName + " - " + dwow.realm + "\r\nLevel " + dwow.level + " " +  Enum.GetName(typeof(wowRaces), (int)dwow.race).Replace("_"," ") + " " + Enum.GetName(typeof(wowClasses), (int)dwow.@class).Replace("_", " "));
+                            stringBuilder.AppendLine(wowName + " - " + dwow.realm + "\r\nLevel " + dwow.level + " " +  Enum.GetName(typeof(WowRaces), (int)dwow.race).Replace("_"," ") + " " + Enum.GetName(typeof(WowClasses), (int)dwow.@class).Replace("_", " "));
                             stringBuilder.AppendLine((string)dwow.items.averageItemLevel + " avg iLevel, " + dwow.totalHonorableKills + " honorable kills, " + dwow.achievementPoints + " achievements");
                             stringBuilder.AppendLine("RBG: " + dwow.pvp.brackets.ARENA_BRACKET_RBG.rating + " rating, " + dwow.pvp.brackets.ARENA_BRACKET_RBG.seasonWon + " wins, " + dwow.pvp.brackets.ARENA_BRACKET_RBG.seasonLost + " losses");
                             stringBuilder.AppendLine("2v2: " + dwow.pvp.brackets.ARENA_BRACKET_2v2.rating + " rating, " + dwow.pvp.brackets.ARENA_BRACKET_2v2.seasonWon + " wins, " + dwow.pvp.brackets.ARENA_BRACKET_2v2.seasonLost + " losses");

@@ -1,8 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Discord;
 using Discord.WebSocket;
+using Newtonsoft.Json;
+using System.Globalization;
 
 namespace TrixieBot
 {
@@ -10,9 +14,9 @@ namespace TrixieBot
     {
         private DiscordSocketClient bot;
 
-        public DiscordProtocol(IConfigurationSection keys) : base(keys)
+        public DiscordProtocol(Config config) : base(config)
         {
-            this.keys = keys;
+            this.config = config;
         }
 
         public override async Task<bool> Start()
@@ -29,11 +33,124 @@ namespace TrixieBot
             // Hook up message handling
             bot.MessageReceived += MessageReceived;
 
-            // Log in
-            await bot.LoginAsync(TokenType.Bot, keys["DiscordToken"]).ConfigureAwait(false);
+            // Log in and start bot
+            await bot.LoginAsync(TokenType.Bot, config.Keys.DiscordToken).ConfigureAwait(false);
             await bot.StartAsync().ConfigureAwait(false);
-            await Task.Delay(-1).ConfigureAwait(false); // Just wait forever
+
+            // Start RSS / Atom processing if there are any items for this protocol
+            Timer timer;
+            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Checking for Discord RSS...");
+            if (config.Rss.Length > 0)
+            {
+                foreach (var rss in config.Rss)
+                {
+                    if (rss.Protocol.ToUpperInvariant() == "DISCORD")
+                    {
+                        Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " At least one Discord RSS found starting timer...");
+                        timer = new Timer(OnTimerTick, null, 0, 900000);
+                        break;
+                    }
+                }
+            }
+
+            // Wait forever
+            await Task.Delay(-1).ConfigureAwait(false); 
             return true;
+        }
+
+        public async void OnTimerTick(object configObject)
+        {
+            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Checking Discord RSS / Atom Feeds...");
+
+            // Read Config
+            var config = JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText("config.json"));
+
+            // Parse each feed
+            var writeConfig = false;
+            for (var thisRss = 0; thisRss < config.Rss.Length; thisRss++)
+            {
+                if (config.Rss[thisRss].Protocol.ToUpperInvariant() == "DISCORD")
+                {
+                    var newMostRecent = config.Rss[thisRss].MostRecent;
+                    var numFound = 0;
+                    if (config.Rss[thisRss].Format.ToUpperInvariant() == "RSS")
+                    {
+                        // Parse RSS Format
+                        try
+                        {
+                            var xDocument = XDocument.Load(config.Rss[thisRss].URL);
+                            foreach (var xElement in xDocument.Root.Descendants().First(i => i.Name.LocalName == "channel").Elements().Where(i => i.Name.LocalName == "item"))
+                            {
+                                // Parse xDocment to POCO
+                                var rssItem = new RSSItem
+                                {
+                                    Title = xElement.Elements().First(i => i.Name.LocalName == "title").Value,
+                                    Link = xElement.Elements().First(i => i.Name.LocalName == "link").Value,
+                                    Description = xElement.Elements().First(i => i.Name.LocalName == "description").Value,
+                                    //PubDate = DateTime.Parse(xElement.Elements().First(i => i.Name.LocalName == "pubDate").Value)
+                                };
+
+                                // Dates in RSS are often in some retarded format
+                                var dateString = xElement.Elements().First(i => i.Name.LocalName == "pubDate").Value;
+                                dateString = dateString.Replace("UTC", "+00:00").Replace("GMT", "+00:00").Replace("EST", "-05:00").Replace("EDT", "-04:00").Replace("CST", "-06:00").Replace("CDT", "-05:00").Replace("MST", "-07:00").Replace("MDT", "-06:00").Replace("PST", "-08:00").Replace("PDT", "-07:00");  // Hack for time zone names instead of UTC offsets
+                                try
+                                {
+                                    // Parse the dates using the standard universal date format
+                                    rssItem.PubDate = DateTime.Parse(dateString, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+                                }
+                                catch
+                                {
+                                    try
+                                    {
+                                        // Try the "r" "S" and "U" formats, as well as RFC822
+                                        var formats = new string[] { "r", "S", "U", "ddd, dd MMM yyyy HH:mm:ss zzz"};
+                                        rssItem.PubDate = DateTime.ParseExact(dateString, formats, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+                                    }
+                                    catch
+                                    {
+                                        // Everything failed.  Give up.
+                                        rssItem.PubDate = DateTime.Now;
+                                    }
+                                }
+
+                                // If this item more recent than our latest pull, update config
+                                if (rssItem.PubDate > newMostRecent)
+                                {
+                                    numFound++;
+                                    if (numFound < 2 || config.Rss[thisRss].Type == "All")
+                                    {
+                                        SendPlainTextMessage(config.Rss[thisRss].Destination, rssItem.Title + "\r\n" + rssItem.Link);
+                                    }
+                                    newMostRecent = rssItem.PubDate.GetValueOrDefault();
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Error reading " + config.Rss[thisRss].URL + ": " + ex.ToString());
+                        }
+                    }
+                    else
+                    {
+                        // TODO Parse Atom
+                    }
+
+                    Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Found " +numFound + " items on " + config.Rss[thisRss].URL + "...");
+
+                    // Write back to config if we found anything
+                    if (newMostRecent > config.Rss[thisRss].MostRecent)
+                    {
+                        config.Rss[thisRss].MostRecent = newMostRecent;
+                        writeConfig = true;
+                    }
+                }
+            }
+
+            // Save Config
+            if (writeConfig)
+            {
+                await System.IO.File.WriteAllTextAsync("config.json", JsonConvert.SerializeObject(config, Formatting.Indented));
+            }
         }
 
         private Task Log(LogMessage log)
@@ -44,7 +161,7 @@ namespace TrixieBot
 
         private Task MessageReceived(SocketMessage message)
         {
-            Processor.TextMessage(this, keys, message.Channel.Id.ToString(), message.Content, message.Author.Username, message.Author.Username);
+            Processor.TextMessage(this, config, message.Channel.Id.ToString(), message.Content, message.Author.Username, message.Author.Username);
             return Task.CompletedTask;
         }
 
