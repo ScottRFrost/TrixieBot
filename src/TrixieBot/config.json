@@ -1,10 +1,32 @@
-﻿{
+{
   "Keys": {
     "TelegramKey": "",
     "DiscordToken": "",
     "WundergroundKey": "",
     "BingKey": "",
     "WolframAppID": "",
-    "BattleNetKey": ""
-  }
+    "BattleNetKey": "",
+    "CoinBaseAPIKey": "",
+    "CoinBaseAPISecret": "",
+    "BittrexAPIKey": "",
+    "BittrexAPISecret": ""
+  },
+  "Rss": [
+    {
+      "URL": "http://",
+      "Format": "RSS",
+      "Type": "Latest",
+      "Protocol": "Discord",
+      "Destination": "",
+      "MostRecent": "1776-07-04T12:00:00Z"
+    },
+    {
+      "URL": "http://",
+      "Format": "RSS",
+      "Type": "Latest",
+      "Protocol": "Telegram",
+      "Destination": "",
+      "MostRecent": "1776-07-04T12:00:00Z"
+    }
+  ]
 }
