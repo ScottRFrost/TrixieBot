@@ -89,7 +89,7 @@ namespace TrixieBot
 
         public async void OnTimerTick(object configObject)
         {
-            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Checking Discord RSS / Atom Feeds...");
+            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Checking Telegram RSS / Atom Feeds...");
 
             // Read Config
             var config = JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText("config.json"));
