@@ -110,13 +110,12 @@ namespace TrixieBot
                             var xDocument = XDocument.Load(config.Rss[thisRss].URL);
                             foreach (var xElement in xDocument.Root.Descendants().First(i => i.Name.LocalName == "channel").Elements().Where(i => i.Name.LocalName == "item"))
                             {
-                                // Parse xDocment to POCO
+                                // Parse xDocument to POCO
                                 var rssItem = new RSSItem
                                 {
                                     Title = xElement.Elements().First(i => i.Name.LocalName == "title").Value,
                                     Link = xElement.Elements().First(i => i.Name.LocalName == "link").Value,
                                     Description = xElement.Elements().First(i => i.Name.LocalName == "description").Value,
-                                    //PubDate = DateTime.Parse(xElement.Elements().First(i => i.Name.LocalName == "pubDate").Value)
                                 };
 
                                 // Dates in RSS are often in some retarded format
@@ -142,8 +141,8 @@ namespace TrixieBot
                                     }
                                 }
 
-                                // If this item more recent than our latest pull, update config
-                                if (rssItem.PubDate > newMostRecent)
+                                // If this item more recent than our latest pull, output it
+                                if (rssItem.PubDate > config.Rss[thisRss].MostRecent)
                                 {
                                     numFound++;
                                     if (numFound < 2 || config.Rss[thisRss].Type == "All")
@@ -156,15 +155,45 @@ namespace TrixieBot
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Error reading " + config.Rss[thisRss].URL + ": " + ex.ToString());
+                            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Error reading Telegram RSS " + config.Rss[thisRss].URL + ": " + ex.ToString());
                         }
                     }
                     else
                     {
-                        // TODO Parse Atom
+                        // Parse Atom Format
+                         try
+                        {
+                            var xDocument = XDocument.Load(config.Rss[thisRss].URL);
+                            foreach (var xElement in xDocument.Root.Descendants().Where(i => i.Name.LocalName == "entry"))
+                            {
+                                // Parse xDocument to POCO
+                                var atomEntry = new AtomEntry
+                                {
+                                    Title = xElement.Elements().First(i => i.Name.LocalName == "title").Value,
+                                    Link = xElement.Elements().First(i => i.Name.LocalName == "link").Attributes().First(a => a.Name == "href").Value,
+                                    Content = xElement.Elements().First(i => i.Name.LocalName == "content").Value,
+                                    Updated = DateTime.Parse(xElement.Elements().First(i => i.Name.LocalName == "updated").Value)
+                                };
+
+                                // If this item more recent than our latest pull, update config
+                                if (atomEntry.Updated > config.Rss[thisRss].MostRecent)
+                                {
+                                    numFound++;
+                                    if (numFound < 2 || config.Rss[thisRss].Type == "All")
+                                    {
+                                        SendPlainTextMessage(config.Rss[thisRss].Destination, atomEntry.Title + "\r\n" + atomEntry.Link);
+                                    }
+                                    newMostRecent = atomEntry.Updated;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Error reading Telegram Atom " + config.Rss[thisRss].URL + ": " + ex.ToString());
+                        }
                     }
 
-                    Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Found " + numFound + " items on " + config.Rss[thisRss].URL + "...");
+                    Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Found " + numFound + " items on Telegram RSS " + config.Rss[thisRss].URL + "...");
 
                     // Write back to config if we found anything
                     if (newMostRecent > config.Rss[thisRss].MostRecent)
