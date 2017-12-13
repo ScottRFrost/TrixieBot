@@ -136,6 +136,14 @@ namespace TrixieBot
                                     sbBittrex.AppendLine(coinName + ": " + coinBalance + " ($" + Math.Round(coinBalance * bittrexBTC, 2) + ")");
                                     bittrexTotal += Math.Round(coinBalance * bittrexBTC, 2);
                                 }
+                                else if (coinName == "USDT")
+                                {
+                                    if (Math.Round(coinBalance, 2) != 0M) 
+                                    {
+                                        sbBittrex.AppendLine(coinName + ": $" + Math.Round(coinBalance, 2));
+                                        bittrexTotal += Math.Round(coinBalance, 2);
+                                    }
+                                }
                                 else 
                                 {
                                     dynamic dbittrexCoin = JObject.Parse(bittrexHttp.GetStringAsync("https://bittrex.com/api/v1.1/public/getticker?market=BTC-" + coinName).Result);
