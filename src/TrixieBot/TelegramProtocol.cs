@@ -38,7 +38,7 @@ namespace TrixieBot
                     if (rss.Protocol.ToUpperInvariant() == "TELEGRAM")
                     {
                         Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " At least one Telegram RSS found starting timer...");
-                        timer = new Timer(OnTimerTick, null, 120000, 900000);
+                        timer = new Timer(OnTimerTick, null, 60000, 900000);
                         break;
                     }
                 }
@@ -130,14 +130,14 @@ namespace TrixieBot
                                 {
                                     try
                                     {
-                                        // Try the "r" "S" and "U" formats, as well as RFC822
-                                        var formats = new string[] { "r", "S", "U", "ddd, dd MMM yyyy HH:mm:ss zzz" };
+                                        // Try the "r" "S" and "U" formats, as well as RFC822 with 2 and 4 digit year
+                                        var formats = new string[] { "r", "S", "U", "ddd, dd MMM yyyy HH:mm:ss zzzz", "ddd, dd MMM yy HH:mm:ss zzzz" };
                                         rssItem.PubDate = DateTime.ParseExact(dateString, formats, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
                                     }
                                     catch
                                     {
                                         // Everything failed.  Give up.
-                                        rssItem.PubDate = DateTime.Now;
+                                        rssItem.PubDate = config.Rss[thisRss].MostRecent;
                                     }
                                 }
 
