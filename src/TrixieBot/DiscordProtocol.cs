@@ -34,11 +34,11 @@ namespace TrixieBot
             bot.MessageReceived += MessageReceived;
 
             // Log in and start bot
-            await bot.LoginAsync(TokenType.Bot, config.Keys.DiscordToken).ConfigureAwait(false);
-            await bot.StartAsync().ConfigureAwait(false);
+            await bot.LoginAsync(TokenType.Bot, config.Keys.DiscordToken);
+            await bot.StartAsync();
 
             // Start RSS / Atom processing if there are any items for this protocol
-            Timer timer;
+            var startTimer = false;
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Checking for Discord RSS...");
             if (config.Rss.Length > 0)
             {
@@ -47,14 +47,24 @@ namespace TrixieBot
                     if (rss.Protocol.ToUpperInvariant() == "DISCORD")
                     {
                         Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " At least one Discord RSS found starting timer...");
-                        timer = new Timer(OnTimerTick, null, 0, 900000);
+                        startTimer = true;
                         break;
                     }
                 }
             }
 
+            // Timer
+            if(startTimer)
+            {
+                while(true)
+                {
+                    OnTimerTick(null);
+                    Thread.Sleep(900000);
+                }
+            }
+
             // Wait forever
-            await Task.Delay(-1).ConfigureAwait(false); 
+            await Task.Delay(-1); 
             return true;
         }
 
