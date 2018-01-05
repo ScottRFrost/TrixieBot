@@ -111,14 +111,23 @@ namespace TrixieBot
                                 {
                                     try
                                     {
-                                        // Try the "r" "S" and "U" formats, as well as RFC822 with 2 and 4 digit year
-                                        var formats = new string[] { "r", "S", "U", "ddd, dd MMM yyyy HH:mm:ss zzzz", "ddd, dd MMM yy HH:mm:ss zzzz" };
+                                        // Try the "r" "S" and "U" formats
+                                        var formats = new string[] { "r", "S", "U"};
                                         rssItem.PubDate = DateTime.ParseExact(dateString, formats, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
                                     }
                                     catch
                                     {
-                                        // Everything failed.  Give up.
-                                        rssItem.PubDate = config.Rss[thisRss].MostRecent;
+                                        try 
+                                        {
+                                            // Try RFC822 with 2 and 4 digit year
+                                            var formats = new string[] {"ddd, dd MMM yyyy HH:mm:ss zzzzz", "ddd, dd MMM yy HH:mm:ss zzzzz", "ddd, dd MMM yyyy HH:mm:ss zzzz", "ddd, dd MMM yy HH:mm:ss zzzz"};
+                                            rssItem.PubDate = DateTime.ParseExact(dateString, formats, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+                                        }
+                                        catch 
+                                        {
+                                            // Everything failed.  Give up.
+                                            rssItem.PubDate = config.Rss[thisRss].MostRecent;
+                                        }
                                     }
                                 }
 
