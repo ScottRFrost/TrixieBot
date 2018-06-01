@@ -45,7 +45,7 @@ namespace TrixieBot
             }
 
             var offset = 0;
-            await bot.LeaveChatAsync(-359896).ConfigureAwait(false);
+            //await bot.LeaveChatAsync(1234).ConfigureAwait(false); // Example
             while (true)
             {
                 var updates = new Update[0];
