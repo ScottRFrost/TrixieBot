@@ -45,6 +45,7 @@ namespace TrixieBot
             }
 
             var offset = 0;
+            await bot.LeaveChatAsync(-359896).ConfigureAwait(false);
             while (true)
             {
                 var updates = new Update[0];
@@ -67,7 +68,7 @@ namespace TrixieBot
                     {
                         switch (update.Type)
                         {
-                            case UpdateType.MessageUpdate:
+                            case UpdateType.Message:
                                 if (update.Message.Text != null)
                                 {
                                     Processor.TextMessage(this, config, update.Message.Chat.Id.ToString(),
@@ -233,8 +234,7 @@ namespace TrixieBot
             {
                 filename = Url.Substring(Url.LastIndexOf("/") + 1, 9999);
             }
-            var photo = new FileToSend(filename, stream);
-            bot.SendDocumentAsync(destination, photo);
+            bot.SendDocumentAsync(destination, stream);
         }
 
         public override void SendImage(string destination, string Url, string caption, string referrer = "https://duckduckgo.com")
@@ -265,15 +265,14 @@ namespace TrixieBot
                 {
                     extension = ".bmp";
                 }
-                var photo = new FileToSend("Photo" + extension, stream);
                 SendStatusUploadingPhoto(destination);
                 if (extension == ".gif")
                 {
-                    bot.SendDocumentAsync(destination, photo);
+                    bot.SendDocumentAsync(destination, stream);
                 }
                 else
                 {
-                    bot.SendPhotoAsync(destination, photo, caption?.Length == 0 ? Url : caption);
+                    bot.SendPhotoAsync(destination, stream, caption?.Length == 0 ? Url : caption);
                 }
             }
             catch (System.Net.Http.HttpRequestException ex)
