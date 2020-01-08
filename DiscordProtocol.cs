@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Discord;
@@ -36,32 +35,6 @@ namespace TrixieBot
             // Log in and start bot
             await bot.LoginAsync(TokenType.Bot, config.Keys.DiscordToken);
             await bot.StartAsync();
-
-            // Start RSS / Atom processing if there are any items for this protocol
-            var startTimer = false;
-            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Checking for Discord RSS...");
-            if (config.Rss.Length > 0)
-            {
-                foreach (var rss in config.Rss)
-                {
-                    if (rss.Protocol.ToUpperInvariant() == "DISCORD")
-                    {
-                        Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " At least one Discord RSS found starting timer...");
-                        startTimer = true;
-                        break;
-                    }
-                }
-            }
-
-            // Timer
-            if(startTimer)
-            {
-                while(true)
-                {
-                    OnTimerTick(null);
-                    Thread.Sleep(900000);
-                }
-            }
 
             // Wait forever
             await Task.Delay(-1); 
