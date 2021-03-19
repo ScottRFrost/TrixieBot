@@ -33,11 +33,11 @@ namespace TrixieBot
             bot.MessageReceived += MessageReceived;
 
             // Log in and start bot
-            await bot.LoginAsync(TokenType.Bot, config.Keys.DiscordToken);
-            await bot.StartAsync();
+            await bot.LoginAsync(TokenType.Bot, config.Keys.DiscordToken).ConfigureAwait(false);
+            await bot.StartAsync().ConfigureAwait(false);
 
             // Wait forever
-            await Task.Delay(-1); 
+            await Task.Delay(-1).ConfigureAwait(false);
             return true;
         }
 
@@ -52,11 +52,11 @@ namespace TrixieBot
             var writeConfig = false;
             for (var thisRss = 0; thisRss < config.Rss.Length; thisRss++)
             {
-                if (config.Rss[thisRss].Protocol.ToUpperInvariant() == "DISCORD")
+                if (string.Equals(config.Rss[thisRss].Protocol, "DISCORD", StringComparison.InvariantCultureIgnoreCase))
                 {
                     var newMostRecent = config.Rss[thisRss].MostRecent;
                     var numFound = 0;
-                    if (config.Rss[thisRss].Format.ToUpperInvariant() == "RSS")
+                    if (string.Equals(config.Rss[thisRss].Format, "RSS", StringComparison.InvariantCultureIgnoreCase))
                     {
                         // Parse RSS Format
                         try
@@ -90,13 +90,13 @@ namespace TrixieBot
                                     }
                                     catch
                                     {
-                                        try 
+                                        try
                                         {
                                             // Try RFC822 with 2 and 4 digit year
                                             var formats = new string[] {"ddd, dd MMM yyyy HH:mm:ss zzzzz", "ddd, dd MMM yy HH:mm:ss zzzzz", "ddd, dd MMM yyyy HH:mm:ss zzzz", "ddd, dd MMM yy HH:mm:ss zzzz"};
                                             rssItem.PubDate = DateTime.ParseExact(dateString, formats, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
                                         }
-                                        catch 
+                                        catch
                                         {
                                             // Everything failed.  Give up.
                                             rssItem.PubDate = config.Rss[thisRss].MostRecent;
@@ -170,7 +170,7 @@ namespace TrixieBot
             // Save Config
             if (writeConfig)
             {
-                await System.IO.File.WriteAllTextAsync("config.json", JsonConvert.SerializeObject(config, Formatting.Indented));
+                await System.IO.File.WriteAllTextAsync("config.json", JsonConvert.SerializeObject(config, Formatting.Indented)).ConfigureAwait(false);
             }
         }
 

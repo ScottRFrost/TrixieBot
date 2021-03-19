@@ -26,7 +26,7 @@ namespace TrixieBot
         public string BingHeader { get; set; }
 
         public string ReferrerUri { get; set; }
-        
+
         public Dictionary<string,string> CustomHeaders {get; set;}
 
         public void AddHeader (string name, string value) {
@@ -38,7 +38,7 @@ namespace TrixieBot
         {
             BuildHeaders();
             try{
-                var response = await GetStringAsync(uri);
+                var response = await GetStringAsync(uri).ConfigureAwait(false);
                 return response;
             }
             catch (System.Net.Http.HttpRequestException ex){
@@ -54,7 +54,7 @@ namespace TrixieBot
         {
             BuildHeaders();
             try{
-                var response = await GetStreamAsync(uri);
+                var response = await GetStreamAsync(uri).ConfigureAwait(false);
                 return response;
             }
             catch (System.Net.Http.HttpRequestException ex){
@@ -66,9 +66,9 @@ namespace TrixieBot
             }
         }
 
-        void BuildHeaders()
+        private void BuildHeaders()
         {
-            if(ReferrerUri != string.Empty) 
+            if(ReferrerUri != string.Empty)
             {
                 DefaultRequestHeaders.Referrer = new Uri(ReferrerUri);
             }
@@ -86,7 +86,7 @@ namespace TrixieBot
             }
         }
 
-        void CleanHeaders()
+        private void CleanHeaders()
         {
             ReferrerUri = "https://duckduckgo.com";
             AuthorizationHeader = string.Empty;

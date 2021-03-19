@@ -30,7 +30,7 @@ namespace TrixieBot
             //await bot.LeaveChatAsync(1234).ConfigureAwait(false); // Example
             while (true)
             {
-                var updates = new Update[0];
+                var updates = Array.Empty<Update>();
                 try
                 {
                     updates = await bot.GetUpdatesAsync(offset).ConfigureAwait(false);
@@ -83,7 +83,7 @@ namespace TrixieBot
             {
                 filename = Url.Substring(Url.LastIndexOf("/") + 1, 9999);
             }
-            bot.SendDocumentAsync(destination, stream);
+            bot.SendDocumentAsync(destination, stream, filename);
         }
 
         public override void SendImage(string destination, string Url, string caption, string referrer = "https://duckduckgo.com")
@@ -144,7 +144,7 @@ namespace TrixieBot
         public override void SendHTMLMessage(string destination, string message)
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
-            
+
             bot.SendTextMessageAsync(destination, message, ParseMode.Html);
         }
 

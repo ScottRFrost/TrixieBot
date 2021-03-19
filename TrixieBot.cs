@@ -45,7 +45,7 @@ namespace TrixieBot
             }
 
             // Wait for all tasks to end (which shouldn't ever happen)
-            await Task.WhenAll(telegram, discord);
+            await Task.WhenAll(telegram, discord).ConfigureAwait(false);
             return false;
         }
     }
