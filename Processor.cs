@@ -62,6 +62,26 @@ namespace TrixieBot
                         protocol.SendImage(replyDestination, "http://thecatapi.com/api/images/get?format=src&type=jpg,png", "Cat");
                         break;
 
+                    case "/crypties":
+                        var crypties = new StringBuilder();
+                        dynamic ada = JObject.Parse(httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=adausd").Result);
+                        decimal adaUsd = ada.result.ADAUSD.c[0];
+                        crypties.Append("ADA ").Append(adaUsd.ToString("c5"));
+                        dynamic btc = JObject.Parse(httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=xbtusd").Result);
+                        decimal btcUsd = btc.result.XXBTZUSD.c[0];
+                        crypties.Append("  BTC ").Append(btcUsd.ToString("c2"));
+                        dynamic eth = JObject.Parse(httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=ethusd").Result);
+                        decimal ethUsd = eth.result.XETHZUSD.c[0];
+                        crypties.Append("  ETH ").Append(ethUsd.ToString("c2"));
+                        dynamic sc = JObject.Parse(httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=scusd").Result);
+                        decimal scUsd = sc.result.SCUSD.c[0];
+                        crypties.Append("  SC ").Append(scUsd.ToString("c5"));
+                        dynamic xmr = JObject.Parse(httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=xmrusd").Result);
+                        decimal xmrUsd = xmr.result.XXMRZUSD.c[0];
+                        crypties.Append("  XMR ").Append(xmrUsd.ToString("c2"));
+                        protocol.SendPlainTextMessage(replyDestination, crypties.ToString());
+                        break;
+
                     case "/doge":
                         protocol.SendImage(replyDestination, "http://dogr.io/wow/" + body.Replace(",", "/").Replace(" ", "") + ".png", "Wow");
                         break;
