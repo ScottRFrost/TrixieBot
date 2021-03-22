@@ -1,5 +1,5 @@
 # TrixieBot
-A simple multi-protocol chat bot for .NET Core 2.x
+A simple multi-protocol chat bot for .NET 5+
 
 Telegram implemented using [Telegram.bot](https://github.com/MrRoundRobin/telegram.bot)
 by [MrRoundRobin](https://github.com/MrRoundRobin)
