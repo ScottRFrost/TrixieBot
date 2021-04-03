@@ -67,44 +67,59 @@ namespace TrixieBot
                         var crypties = new StringBuilder();
                         var btcUsdTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=xbtusd");
                         var adaUsdTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=adausd");
-                        var adaBtcTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=adaxbt");
+                        var adaXbtTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=adaxbt");
+                        var bnbUsdTask = httpClient.DownloadString("https://api.binance.us/api/v3/avgPrice?symbol=BNBUSD");
+                        var bnbXbtTask = httpClient.DownloadString("https://api.binance.us/api/v3/avgPrice?symbol=BNBBTC");
                         var ethUsdTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=ethusd");
-                        var ethBtcTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=ethxbt");
+                        var ethXbtTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=ethxbt");
                         var scUsdTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=scusd");
-                        var scBtcTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=scxbt");
+                        var scXbtTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=scxbt");
+                        var xlmUsdtask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=xlmusd");
+                        var xlmXbttask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=xlmxbt");
                         var xmrUsdtask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=xmrusd");
-                        var xmrBtcTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=xmrxbt");
+                        var xmrXbtTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=xmrxbt");
 
-                        await Task.WhenAll(btcUsdTask, adaUsdTask, adaBtcTask, ethUsdTask, ethBtcTask, scUsdTask, scBtcTask, xmrUsdtask, xmrBtcTask).ConfigureAwait(false);
+                        await Task.WhenAll(btcUsdTask, adaUsdTask, adaXbtTask, bnbUsdTask, bnbXbtTask, ethUsdTask, ethXbtTask, scUsdTask, scXbtTask, xlmUsdtask, xlmXbttask, xmrUsdtask, xmrXbtTask).ConfigureAwait(false);
 
                         dynamic btc = JObject.Parse(btcUsdTask.Result);
                         decimal btcUsd = btc.result.XXBTZUSD.c[0];
-                        crypties.Append("  BTC ").AppendLine(btcUsd.ToString("c2"));
+                        crypties.Append("BTC ").AppendLine(btcUsd.ToString("c2"));
 
                         dynamic ada = JObject.Parse(adaUsdTask.Result);
                         decimal adaUsd = ada.result.ADAUSD.c[0];
-                        ada = JObject.Parse(adaBtcTask.Result);
-                        decimal adaBtc = ada.result.ADAXBT.c[0];
-                        crypties.Append("ADA ").Append(adaUsd.ToString("c5")).Append(" B").Append(adaBtc.ToString("n8"));
-                        
-                        
+                        ada = JObject.Parse(adaXbtTask.Result);
+                        decimal adaXbt = ada.result.ADAXBT.c[0];
+                        crypties.Append("ADA ").Append(adaUsd.ToString("c5")).Append(" B").AppendLine(adaXbt.ToString("n8"));
+
+                        dynamic bnb = JObject.Parse(bnbUsdTask.Result);
+                        decimal bnbUsd = bnb.price;
+                        bnb = JObject.Parse(bnbXbtTask.Result);
+                        decimal bnbXbt = bnb.price;
+                        crypties.Append("BNB ").Append(bnbUsd.ToString("c4")).Append(" B").AppendLine(bnbXbt.ToString("n8"));
+
                         dynamic eth = JObject.Parse(ethUsdTask.Result);
                         decimal ethUsd = eth.result.XETHZUSD.c[0];
-                        eth = JObject.Parse(ethBtcTask.Result);
-                        decimal ethBtc = eth.result.XETHXXBT.c[0];
-                        crypties.Append("  ETH ").Append(ethUsd.ToString("c2")).Append(" B").AppendLine(ethBtc.ToString("n6"));
+                        eth = JObject.Parse(ethXbtTask.Result);
+                        decimal ethXbt = eth.result.XETHXXBT.c[0];
+                        crypties.Append("ETH ").Append(ethUsd.ToString("c2")).Append(" B").AppendLine(ethXbt.ToString("n6"));
                         
                         dynamic sc = JObject.Parse(scUsdTask.Result);
                         decimal scUsd = sc.result.SCUSD.c[0];
-                        sc = JObject.Parse(scBtcTask.Result);
-                        decimal scBtc = sc.result.SCXBT.c[0];
-                        crypties.Append("SC ").Append(scUsd.ToString("c5")).Append(" B").Append(scBtc.ToString("n10"));
+                        sc = JObject.Parse(scXbtTask.Result);
+                        decimal scXbt = sc.result.SCXBT.c[0];
+                        crypties.Append("SC ").Append(scUsd.ToString("c5")).Append(" B").AppendLine(scXbt.ToString("n10"));
+
+                        dynamic xlm = JObject.Parse(xlmUsdtask.Result);
+                        decimal xlmUsd = xlm.result.XXLMZUSD.c[0];
+                        xlm = JObject.Parse(xlmXbttask.Result);
+                        decimal xlmXbt = xlm.result.XXLMXXBT.c[0];
+                        crypties.Append("XLM ").Append(xlmUsd.ToString("c5")).Append(" B").AppendLine(xlmXbt.ToString("n8"));
 
                         dynamic xmr = JObject.Parse(xmrUsdtask.Result);
                         decimal xmrUsd = xmr.result.XXMRZUSD.c[0];
-                        xmr = JObject.Parse(xmrBtcTask.Result);
-                        decimal xmrBtc = xmr.result.XXMRXXBT.c[0];
-                        crypties.Append("  XMR ").Append(xmrUsd.ToString("c2")).Append(" B").AppendLine(xmrBtc.ToString("n8"));
+                        xmr = JObject.Parse(xmrXbtTask.Result);
+                        decimal xmrXbt = xmr.result.XXMRXXBT.c[0];
+                        crypties.Append("XMR ").Append(xmrUsd.ToString("c2")).Append(" B").AppendLine(xmrXbt.ToString("n6"));
 
                         protocol.SendPlainTextMessage(replyDestination, crypties.ToString());
                         break;
