@@ -1,18 +1,17 @@
 ﻿using AngleSharp;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TrixieBot
 {
     public static class Processor
     {
+        [RequiresUnreferencedCode("Enumeration on Dynamics")]
         public async static void TextMessage(BaseProtocol protocol, Config config, string replyDestination, string text, string replyUsername = "", string replyFullname = "", string replyMessage = "")
         {
             // Set up 
@@ -27,7 +26,7 @@ namespace TrixieBot
             // Allow ! or /
             if (text.StartsWith("!", StringComparison.Ordinal))
             {
-                text = "/" + text.Substring(1);
+                text = "/" + text[1..];
             }
 
             // Parse
@@ -36,7 +35,7 @@ namespace TrixieBot
             if (text.StartsWith("/s/", StringComparison.Ordinal))
             {
                 command = "/s"; // special case for sed
-                body = text.Substring(2);
+                body = text[2..];
             }
             else
             {
@@ -102,7 +101,7 @@ namespace TrixieBot
                         eth = JObject.Parse(ethXbtTask.Result);
                         decimal ethXbt = eth.result.XETHXXBT.c[0];
                         crypties.Append("ETH ").Append(ethUsd.ToString("c2")).Append(" B").AppendLine(ethXbt.ToString("n6"));
-                        
+
                         dynamic sc = JObject.Parse(scUsdTask.Result);
                         decimal scUsd = sc.result.SCUSD.c[0];
                         sc = JObject.Parse(scXbtTask.Result);
@@ -387,7 +386,7 @@ namespace TrixieBot
 
                     case "/version":
                     case "/about":
-                        protocol.SendPlainTextMessage(replyDestination, "Trixie Is Best Pony Bot\r\nRelease fourty-two for .NET 5.x\r\nBy http://scottrfrost.github.io");
+                        protocol.SendPlainTextMessage(replyDestination, "Trixie Is Best Pony Bot\r\nRelease fourty-two for .NET 6.x\r\nBy http://scottrfrost.github.io");
                         break;
 
                     case "/wiki":
