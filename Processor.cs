@@ -81,43 +81,43 @@ namespace TrixieBot
                         await Task.WhenAll(btcUsdTask, adaUsdTask, adaXbtTask, bnbUsdTask, bnbXbtTask, ethUsdTask, ethXbtTask, scUsdTask, scXbtTask, xlmUsdtask, xlmXbttask, xmrUsdtask, xmrXbtTask).ConfigureAwait(false);
 
                         dynamic btc = JObject.Parse(btcUsdTask.Result);
-                        decimal btcUsd = btc.result.XXBTZUSD.c[0];
+                        decimal btcUsd = btc?.result?.XXBTZUSD?.c[0] ?? 0M;
                         crypties.Append("BTC ").AppendLine(btcUsd.ToString("c2"));
 
                         dynamic ada = JObject.Parse(adaUsdTask.Result);
-                        decimal adaUsd = ada.result.ADAUSD.c[0];
+                        decimal adaUsd = ada?.result?.ADAUSD?.c[0] ?? 0M;
                         ada = JObject.Parse(adaXbtTask.Result);
-                        decimal adaXbt = ada.result.ADAXBT.c[0];
+                        decimal adaXbt = ada?.result?.ADAXBT?.c[0] ?? 0M;
                         crypties.Append("ADA ").Append(adaUsd.ToString("c5")).Append(" B").AppendLine(adaXbt.ToString("n8"));
 
                         dynamic bnb = JObject.Parse(bnbUsdTask.Result);
-                        decimal bnbUsd = bnb.price;
+                        decimal bnbUsd = bnb?.price ?? 0M;
                         bnb = JObject.Parse(bnbXbtTask.Result);
-                        decimal bnbXbt = bnb.price;
+                        decimal bnbXbt = bnb?.price ?? 0M;
                         crypties.Append("BNB ").Append(bnbUsd.ToString("c4")).Append(" B").AppendLine(bnbXbt.ToString("n8"));
 
                         dynamic eth = JObject.Parse(ethUsdTask.Result);
-                        decimal ethUsd = eth.result.XETHZUSD.c[0];
+                        decimal ethUsd = eth?.result?.XETHZUSD?.c[0] ?? 0M;
                         eth = JObject.Parse(ethXbtTask.Result);
-                        decimal ethXbt = eth.result.XETHXXBT.c[0];
+                        decimal ethXbt = eth?.result?.XETHXXBT?.c[0] ?? 0M;
                         crypties.Append("ETH ").Append(ethUsd.ToString("c2")).Append(" B").AppendLine(ethXbt.ToString("n6"));
 
                         dynamic sc = JObject.Parse(scUsdTask.Result);
-                        decimal scUsd = sc.result.SCUSD.c[0];
+                        decimal scUsd = sc?.result?.SCUSD?.c[0] ?? 0M;
                         sc = JObject.Parse(scXbtTask.Result);
-                        decimal scXbt = sc.result.SCXBT.c[0];
+                        decimal scXbt = sc?.result?.SCXBT?.c[0] ?? 0M;
                         crypties.Append("SC ").Append(scUsd.ToString("c5")).Append(" B").AppendLine(scXbt.ToString("n10"));
 
                         dynamic xlm = JObject.Parse(xlmUsdtask.Result);
-                        decimal xlmUsd = xlm.result.XXLMZUSD.c[0];
+                        decimal xlmUsd = xlm?.result?.XXLMZUSD?.c[0] ?? 0M;
                         xlm = JObject.Parse(xlmXbttask.Result);
-                        decimal xlmXbt = xlm.result.XXLMXXBT.c[0];
+                        decimal xlmXbt = xlm?.result?.XXLMXXBT?.c[0] ?? 0M;
                         crypties.Append("XLM ").Append(xlmUsd.ToString("c5")).Append(" B").AppendLine(xlmXbt.ToString("n8"));
 
                         dynamic xmr = JObject.Parse(xmrUsdtask.Result);
-                        decimal xmrUsd = xmr.result.XXMRZUSD.c[0];
+                        decimal xmrUsd = xmr?.result?.XXMRZUSD?.c[0] ?? 0M;
                         xmr = JObject.Parse(xmrXbtTask.Result);
-                        decimal xmrXbt = xmr.result.XXMRXXBT.c[0];
+                        decimal xmrXbt = xmr?.result?.XXMRXXBT?.c[0] ?? 0M;
                         crypties.Append("XMR ").Append(xmrUsd.ToString("c2")).Append(" B").AppendLine(xmrXbt.ToString("n6"));
 
                         protocol.SendPlainTextMessage(replyDestination, crypties.ToString());
