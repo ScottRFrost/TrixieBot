@@ -23,7 +23,8 @@ namespace TrixieBot
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Discord Protocol starting...");
             bot = new DiscordSocketClient(new DiscordSocketConfig()
             {
-                LogLevel = LogSeverity.Info
+                LogLevel = LogSeverity.Warning,
+                GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent,  // When creating bot on discord.com/developer, check Message Content Intent
             });
 
             // Hook up logging
@@ -31,7 +32,7 @@ namespace TrixieBot
 
             // Hook up message handling
             bot.MessageReceived += MessageReceived;
-
+            
             // Log in and start bot
             await bot.LoginAsync(TokenType.Bot, config.Keys.DiscordToken).ConfigureAwait(false);
             await bot.StartAsync().ConfigureAwait(false);
@@ -182,7 +183,16 @@ namespace TrixieBot
 
         private Task MessageReceived(SocketMessage message)
         {
-            Processor.TextMessage(this, config, message.Channel.Id.ToString(), message.Content, message.Author.Username, message.Author.Username);
+            if(message is SocketUserMessage)
+            {
+                var socketUserMessage = message as SocketUserMessage;
+                Processor.TextMessage(this, config, socketUserMessage.Channel.Id.ToString(), socketUserMessage.Content, socketUserMessage.Author.Username, socketUserMessage.Author.Username);
+            }
+            else if(message is SocketSystemMessage)
+            {
+                var socketSystemMessage = message as SocketUserMessage;
+                //// Don't care for now
+            }
             return Task.CompletedTask;
         }
 

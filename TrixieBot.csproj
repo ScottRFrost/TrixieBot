@@ -6,7 +6,7 @@
   
   <PropertyGroup>
     <Version>6.0.0</Version>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>TrixieBot</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>TrixieBot</PackageId>
@@ -23,18 +23,15 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Discord.Net.WebSocket" Version="3.7.2" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="3.8.1" />
     <PackageReference Include="AngleSharp">
       <Version>0.17.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration">
-      <Version>6.0.1</Version>
+      <Version>7.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json">
-      <Version>6.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions">
-      <Version>1.1.0</Version>
+      <Version>7.0.0</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.Xml.XmlDocument">
@@ -44,7 +41,7 @@
       <Version>4.3.0</Version>
     </PackageReference>
     <PackageReference Include="Telegram.Bot">
-      <Version>17.0.0</Version>
+      <Version>18.0.0</Version>
     </PackageReference>
   </ItemGroup>
   
