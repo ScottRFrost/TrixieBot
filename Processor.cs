@@ -14,6 +14,12 @@ namespace TrixieBot
         [RequiresUnreferencedCode("Enumeration on Dynamics")]
         public async static void TextMessage(BaseProtocol protocol, Config config, string replyDestination, string text, string replyUsername = "", string replyFullname = "", string replyMessage = "")
         {
+            // Ignore blank requests
+            if(text.Trim().Length < 2)
+            {
+                return;
+            }
+
             // Set up 
             var httpClient = new ProHttpClient();
             var stringBuilder = new StringBuilder();
