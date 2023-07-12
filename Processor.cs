@@ -68,6 +68,10 @@ namespace TrixieBot
                         protocol.SendImage(replyDestination, "http://thecatapi.com/api/images/get?format=src&type=jpg,png", "Cat");
                         break;
 
+                    case "/chatid":
+                        protocol.SendPlainTextMessage(replyDestination, "Chat ID: " + replyDestination);
+                        break;
+
                     case "/crypties":
                         var crypties = new StringBuilder();
                         var btcUsdTask = httpClient.DownloadString("https://api.kraken.com/0/public/Ticker?pair=xbtusd");

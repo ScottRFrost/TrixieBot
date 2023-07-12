@@ -78,12 +78,13 @@ namespace TrixieBot
             {
                 ReferrerUri = referrer
             };
-            var stream = httpClient.DownloadData(Url).Result;
+            using var stream = httpClient.DownloadData(Url).Result;
+            var inputFile = InputFile.FromStream(stream);
             if (filename?.Length == 0)
             {
                 filename = Url.Substring(Url.LastIndexOf("/") + 1, 9999);
             }
-            bot.SendDocumentAsync(destination, stream, filename);
+            bot.SendDocumentAsync(destination, inputFile, caption: filename);
         }
 
         public override void SendImage(string destination, string Url, string caption, string referrer = "https://duckduckgo.com")
@@ -96,7 +97,8 @@ namespace TrixieBot
                 {
                     ReferrerUri = referrer
                 };
-                var stream = httpClient.DownloadData(Url).Result;
+                using var stream = httpClient.DownloadData(Url).Result;
+                var inputFile = InputFile.FromStream(stream);
                 var extension = ".jpg";
                 if (Url.Contains(".gif") || Url.Contains("image/gif"))
                 {
@@ -117,11 +119,11 @@ namespace TrixieBot
                 SendStatusUploadingPhoto(destination);
                 if (extension == ".gif")
                 {
-                    bot.SendDocumentAsync(destination, stream);
+                    bot.SendDocumentAsync(destination, inputFile);
                 }
                 else
                 {
-                    bot.SendPhotoAsync(destination, stream, caption?.Length == 0 ? Url : caption);
+                    bot.SendPhotoAsync(destination, inputFile, caption: caption?.Length == 0 ? Url : caption);
                 }
             }
             catch (System.Net.Http.HttpRequestException ex)
@@ -145,7 +147,7 @@ namespace TrixieBot
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
 
-            bot.SendTextMessageAsync(destination, message, ParseMode.Html);
+            bot.SendTextMessageAsync(destination, message, parseMode: ParseMode.Html);
         }
 
         public override void SendLocation(string destination, float latitude, float longitude)
@@ -156,7 +158,7 @@ namespace TrixieBot
         public override void SendMarkdownMessage(string destination, string message)
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
-            bot.SendTextMessageAsync(destination, message, ParseMode.Markdown);
+            bot.SendTextMessageAsync(destination, message, parseMode: ParseMode.Markdown);
         }
 
         public override void SendPlainTextMessage(string destination, string message)
