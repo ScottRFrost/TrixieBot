@@ -12,7 +12,7 @@ namespace TrixieBot
     public static class Processor
     {
         [RequiresUnreferencedCode("Enumeration on Dynamics")]
-        public async static void TextMessage(BaseProtocol protocol, Config config, string replyDestination, string text, string replyUsername = "", string replyFullname = "", string replyMessage = "")
+        public async static Task TextMessage(BaseProtocol protocol, Config config, string replyDestination, string text, string replyUsername = "", string replyFullname = "", string replyMessage = "")
         {
             // Ignore blank requests
             if(text.Trim().Length < 2)
@@ -396,7 +396,7 @@ namespace TrixieBot
 
                     case "/version":
                     case "/about":
-                        protocol.SendPlainTextMessage(replyDestination, "Trixie Is Best Pony Bot\r\nRelease fourty-two for .NET 7.x\r\nBy http://scottrfrost.github.io");
+                        protocol.SendPlainTextMessage(replyDestination, "Trixie Is Best Pony Bot\r\nRelease fourty-two\r\nSource https://github.com/ScottRFrost/TrixieBot");
                         break;
 
                     case "/wiki":
