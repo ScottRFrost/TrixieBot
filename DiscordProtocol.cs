@@ -183,20 +183,18 @@ namespace TrixieBot
 
         private Task MessageReceived(SocketMessage message)
         {
-            if(message is SocketUserMessage)
+            if (message is SocketUserMessage socketUserMessage)
             {
-                var socketUserMessage = message as SocketUserMessage;
-                Processor.TextMessage(this, config, socketUserMessage.Channel.Id.ToString(), socketUserMessage.Content, socketUserMessage.Author.Username, socketUserMessage.Author.Username);
+                Processor.TextMessage(this, config, socketUserMessage.Channel.Id.ToString(), socketUserMessage.Content, socketUserMessage.Author.Username, socketUserMessage.Author.Username).RunSynchronously();
             }
-            else if(message is SocketSystemMessage)
+            else if (message is SocketSystemMessage socketSystemMessage)
             {
-                var socketSystemMessage = message as SocketUserMessage;
                 //// Don't care for now
             }
             return Task.CompletedTask;
         }
 
-        public override void SendFile(string destination, string Url, string filename = "", string referrer = "https://duckduckgo.com")
+        public override async void SendFile(string destination, string Url, string filename = "", string referrer = "https://duckduckgo.com")
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + Url);
             SendStatusTyping(destination);
@@ -209,11 +207,11 @@ namespace TrixieBot
             {
                 filename = Url.Substring(Url.LastIndexOf("/", StringComparison.Ordinal) + 1, 9999);
             }
-            var channel = bot.GetChannelAsync(Convert.ToUInt64(destination)).Result as IMessageChannel;
-            channel.SendFileAsync(stream, filename);
+            var channel = await bot.GetChannelAsync(Convert.ToUInt64(destination)) as IMessageChannel;
+            await channel.SendFileAsync(stream, filename);
         }
 
-        public override void SendImage(string destination, string Url, string caption, string referrer = "https://duckduckgo.com")
+        public override async void SendImage(string destination, string Url, string caption, string referrer = "https://duckduckgo.com")
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + Url + " : " + caption);
             SendStatusTyping(destination);
@@ -224,7 +222,7 @@ namespace TrixieBot
                     ReferrerUri = referrer
                 };
                 var stream = httpClient.DownloadData(Url).Result;
-                var channel = bot.GetChannelAsync(Convert.ToUInt64(destination)).Result as IMessageChannel;
+                var channel = await bot.GetChannelAsync(Convert.ToUInt64(destination)) as IMessageChannel;
                 var extension = ".jpg";
                 if (Url.Contains(".gif") || Url.Contains("image/gif"))
                 {
@@ -243,7 +241,7 @@ namespace TrixieBot
                     extension = ".bmp";
                 }
                 SendStatusUploadingPhoto(destination);
-                channel.SendFileAsync(stream, "image" + extension, caption);
+                await channel.SendFileAsync(stream, "image" + extension, caption);
             }
             catch (System.Net.Http.HttpRequestException ex)
             {
@@ -262,50 +260,50 @@ namespace TrixieBot
             }
         }
 
-        public override void SendHTMLMessage(string destination, string message)
+        public override async void SendHTMLMessage(string destination, string message)
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
-            var channel = bot.GetChannelAsync(Convert.ToUInt64(destination)).Result as IMessageChannel;
-            channel.SendMessageAsync(message);
+            var channel = await bot.GetChannelAsync(Convert.ToUInt64(destination)) as IMessageChannel;
+            await channel.SendMessageAsync(message);
         }
 
-        public override void SendLocation(string destination, float latitude, float longitude)
+        public override async void SendLocation(string destination, float latitude, float longitude)
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + latitude + " + " + longitude);
-            var channel = bot.GetChannelAsync(Convert.ToUInt64(destination)).Result as IMessageChannel;
-            channel.SendMessageAsync("http://maps.google.com/maps?z=12&t=m&q=loc:" + latitude + "+" + longitude);
+            var channel = await bot.GetChannelAsync(Convert.ToUInt64(destination)) as IMessageChannel;
+            await channel.SendMessageAsync("http://maps.google.com/maps?z=12&t=m&q=loc:" + latitude + "+" + longitude);
         }
 
-        public override void SendMarkdownMessage(string destination, string message)
+        public override async void SendMarkdownMessage(string destination, string message)
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
-            var channel = bot.GetChannelAsync(Convert.ToUInt64(destination)).Result as IMessageChannel;
-            channel.SendMessageAsync(message);
+            var channel = await bot.GetChannelAsync(Convert.ToUInt64(destination)) as IMessageChannel;
+            await channel.SendMessageAsync(message);
         }
 
-        public override void SendPlainTextMessage(string destination, string message)
+        public override async void SendPlainTextMessage(string destination, string message)
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
-            var channel = bot.GetChannelAsync(Convert.ToUInt64(destination)).Result as IMessageChannel;
-            channel.SendMessageAsync(message);
+            var channel = await bot.GetChannelAsync(Convert.ToUInt64(destination)) as IMessageChannel;
+            await channel.SendMessageAsync(message);
         }
 
-        public override void SendStatusTyping(string destination)
+        public override async void SendStatusTyping(string destination)
         {
-            var channel = bot.GetChannelAsync(Convert.ToUInt64(destination)).Result as IMessageChannel;
-            channel.TriggerTypingAsync();
+            var channel = await bot.GetChannelAsync(Convert.ToUInt64(destination)) as IMessageChannel;
+            await channel.TriggerTypingAsync();
         }
 
-        public override void SendStatusUploadingFile(string destination)
+        public override async void SendStatusUploadingFile(string destination)
         {
-            var channel = bot.GetChannelAsync(Convert.ToUInt64(destination)).Result as IMessageChannel;
-            channel.TriggerTypingAsync();
+            var channel = await bot.GetChannelAsync(Convert.ToUInt64(destination)) as IMessageChannel;
+            await channel.TriggerTypingAsync();
         }
 
-        public override void SendStatusUploadingPhoto(string destination)
+        public override async void SendStatusUploadingPhoto(string destination)
         {
-            var channel = bot.GetChannelAsync(Convert.ToUInt64(destination)).Result as IMessageChannel;
-            channel.TriggerTypingAsync();
+            var channel = await bot.GetChannelAsync(Convert.ToUInt64(destination)) as IMessageChannel;
+            await channel.TriggerTypingAsync();
         }
     }
 }

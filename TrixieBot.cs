@@ -8,13 +8,13 @@ namespace TrixieBot
 {
     public class TrixieBot
     {
-        public Config config;
-        public Keys keys;
+        public Config Config { get; set; }
+        public Keys Keys { get; set; }
 
         public TrixieBot()
         {
             // Read Config
-            config = JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText("config.json"));
+            Config = JsonConvert.DeserializeObject<Config>(System.IO.File.ReadAllText("config.json"));
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Configuation read");
         }
 
@@ -22,9 +22,9 @@ namespace TrixieBot
         {
             // Start Telegram
             Task<bool> telegram;
-            if (config.Keys.TelegramKey != string.Empty)
+            if (Config.Keys.TelegramKey != string.Empty)
             {
-                var telegramProtocol = new TelegramProtocol(config);
+                var telegramProtocol = new TelegramProtocol(Config);
                 telegram = telegramProtocol.Start();
             }
             else
@@ -34,9 +34,9 @@ namespace TrixieBot
 
             // Start Discord
             Task<bool> discord;
-            if (config.Keys.DiscordToken != string.Empty)
+            if (Config.Keys.DiscordToken != string.Empty)
             {
-                var discordProtocol = new DiscordProtocol(config);
+                var discordProtocol = new DiscordProtocol(Config);
                 discord = discordProtocol.Start();
             }
             else
@@ -53,53 +53,53 @@ namespace TrixieBot
     #region "Config Structs"
     public struct Keys
     {
-        public string TelegramKey;
-        public string DiscordToken;
-        public string WundergroundKey;
-        public string BingKey;
-        public string WolframAppID;
-        public string BattleNetKey;
-        public string CoinBaseAPIKey;
-        public string CoinBaseAPISecret;
-        public string BittrexAPIKey;
-        public string BittrexAPISecret;
+        public string TelegramKey { get; set; }
+        public string DiscordToken { get; set; }
+        public string WundergroundKey { get; set; }
+        public string BingKey { get; set; }
+        public string WolframAppID { get; set; }
+        public string BattleNetKey { get; set; }
+        public string CoinBaseAPIKey { get; set; }
+        public string CoinBaseAPISecret { get; set; }
+        public string BittrexAPIKey { get; set; }
+        public string BittrexAPISecret { get; set; }
     }
 
     public struct Rss
     {
-        public string URL;
-        public string Format; // "RSS" or "Atom"
-        public string Type; // "Latest" to only send the top item, or "All" to send all items since the MostRecent pull
-        public string Protocol;
-        public string Destination;
-        public DateTime MostRecent;
+        public string URL { get; set; }
+        public string Format { get; set; } // "RSS" or "Atom"
+        public string Type { get; set; } // "Latest" to only send the top item, or "All" to send all items since the MostRecent pull
+        public string Protocol { get; set; }
+        public string Destination { get; set; }
+        public DateTime MostRecent { get; set; }
     }
 
     public struct Config
     {
-        public Keys Keys;
-        public Rss[] Rss;
+        public Keys Keys { get; set; }
+        public Rss[] Rss { get; set; }
     }
     #endregion
 
     #region "RSS & Atom Structs"
     public struct RSSItem
     {
-        public string Title;
-        public string Link;
-        public string Description;
-        public string Guid;
-        public DateTime? PubDate;
+        public string Title { get; set; }
+        public string Link { get; set; }
+        public string Description { get; set; }
+        public string Guid { get; set; }
+        public DateTime? PubDate { get; set; }
     }
 
     public struct AtomEntry
     {
-        public string Category;
-        public string Content;
-        public string Id;
-        public string Link;
-        public DateTime Updated;
-        public string Title;
+        public string Category { get; set; }
+        public string Content { get; set; }
+        public string Id { get; set; }
+        public string Link { get; set; }
+        public DateTime Updated { get; set; }
+        public string Title { get; set; }
     }
     #endregion
 }

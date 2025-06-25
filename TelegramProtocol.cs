@@ -20,7 +20,7 @@ namespace TrixieBot
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " Telegram Protocol starting...");
             bot = new TelegramBotClient(config.Keys.TelegramKey);
-            me = await bot.GetMeAsync().ConfigureAwait(false);
+            me = await bot.GetMe().ConfigureAwait(false);
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + me.Username + " started at " + DateTime.Now);
 
             // Start RSS / Atom processing if there are any items for this protocol
@@ -33,7 +33,7 @@ namespace TrixieBot
                 var updates = Array.Empty<Update>();
                 try
                 {
-                    updates = await bot.GetUpdatesAsync(offset).ConfigureAwait(false);
+                    updates = await bot.GetUpdates(offset).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {
@@ -53,7 +53,7 @@ namespace TrixieBot
                             case UpdateType.Message:
                                 if (update.Message.Text != null)
                                 {
-                                    Processor.TextMessage(this, config, update.Message.Chat.Id.ToString(),
+                                    await Processor.TextMessage(this, config, update.Message.Chat.Id.ToString(),
                                     update.Message.Text.Replace("@" + me.Username, ""),
                                     update.Message.From.Username, update.Message.From.FirstName + " " + update.Message.From.LastName,
                                     update.Message.ReplyToMessage == null ? "" : update.Message.ReplyToMessage.Text);
@@ -70,7 +70,7 @@ namespace TrixieBot
             }
         }
 
-        public override void SendFile(string destination, string Url, string filename = "", string referrer = "https://duckduckgo.com")
+        public override async void SendFile(string destination, string Url, string filename = "", string referrer = "https://duckduckgo.com")
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + Url);
             SendStatusTyping(destination);
@@ -82,12 +82,12 @@ namespace TrixieBot
             var inputFile = InputFile.FromStream(stream);
             if (filename?.Length == 0)
             {
-                filename = Url.Substring(Url.LastIndexOf("/") + 1, 9999);
+                filename = Url.Substring(Url.LastIndexOf('/') + 1, 9999);
             }
-            bot.SendDocumentAsync(destination, inputFile, caption: filename);
+            await bot.SendDocument(destination, inputFile, caption: filename);
         }
 
-        public override void SendImage(string destination, string Url, string caption, string referrer = "https://duckduckgo.com")
+        public override async void SendImage(string destination, string Url, string caption, string referrer = "https://duckduckgo.com")
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + Url + " : " + caption);
             SendStatusTyping(destination);
@@ -97,7 +97,7 @@ namespace TrixieBot
                 {
                     ReferrerUri = referrer
                 };
-                using var stream = httpClient.DownloadData(Url).Result;
+                await using var stream = await httpClient.DownloadData(Url);
                 var inputFile = InputFile.FromStream(stream);
                 var extension = ".jpg";
                 if (Url.Contains(".gif") || Url.Contains("image/gif"))
@@ -119,11 +119,11 @@ namespace TrixieBot
                 SendStatusUploadingPhoto(destination);
                 if (extension == ".gif")
                 {
-                    bot.SendDocumentAsync(destination, inputFile);
+                    await bot.SendDocument(destination, inputFile);
                 }
                 else
                 {
-                    bot.SendPhotoAsync(destination, inputFile, caption: caption?.Length == 0 ? Url : caption);
+                    await bot.SendPhoto(destination, inputFile, caption: caption?.Length == 0 ? Url : caption);
                 }
             }
             catch (System.Net.Http.HttpRequestException ex)
@@ -143,43 +143,43 @@ namespace TrixieBot
             }
         }
 
-        public override void SendHTMLMessage(string destination, string message)
+        public override async void SendHTMLMessage(string destination, string message)
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
 
-            bot.SendTextMessageAsync(destination, message, parseMode: ParseMode.Html);
+            await bot.SendMessage(destination, message, parseMode: ParseMode.Html);
         }
 
-        public override void SendLocation(string destination, float latitude, float longitude)
+        public override async void SendLocation(string destination, float latitude, float longitude)
         {
-            bot.SendLocationAsync(destination, latitude, longitude);
+            await bot.SendLocation(destination, latitude, longitude);
         }
 
-        public override void SendMarkdownMessage(string destination, string message)
-        {
-            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
-            bot.SendTextMessageAsync(destination, message, parseMode: ParseMode.Markdown);
-        }
-
-        public override void SendPlainTextMessage(string destination, string message)
+        public override async void SendMarkdownMessage(string destination, string message)
         {
             Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
-            bot.SendTextMessageAsync(destination, message);
+            await bot.SendMessage(destination, message, parseMode: ParseMode.Markdown);
         }
 
-        public override void SendStatusTyping(string destination)
+        public override async void SendPlainTextMessage(string destination, string message)
         {
-            bot.SendChatActionAsync(destination, ChatAction.Typing);
+            Console.WriteLine(DateTime.Now.ToString("M/d HH:mm") + " " + destination + " > " + message);
+            await bot.SendMessage(destination, message);
         }
 
-        public override void SendStatusUploadingFile(string destination)
+        public override async void SendStatusTyping(string destination)
         {
-            bot.SendChatActionAsync(destination, ChatAction.UploadDocument);
+            await bot.SendChatAction(destination, ChatAction.Typing);
         }
 
-        public override void SendStatusUploadingPhoto(string destination)
+        public override async void SendStatusUploadingFile(string destination)
         {
-            bot.SendChatActionAsync(destination, ChatAction.UploadPhoto);
+            await bot.SendChatAction(destination, ChatAction.UploadDocument);
+        }
+
+        public override async void SendStatusUploadingPhoto(string destination)
+        {
+            await bot.SendChatAction(destination, ChatAction.UploadPhoto);
         }
     }
 }

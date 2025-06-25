@@ -30,7 +30,7 @@ namespace TrixieBot
             Console.WriteLine(replyDestination + " < " + replyUsername + " - " + text);
 
             // Allow ! or /
-            if (text.StartsWith("!", StringComparison.Ordinal))
+            if (text.StartsWith('!'))
             {
                 text = "/" + text[1..];
             }
@@ -48,7 +48,6 @@ namespace TrixieBot
                 command = text.Split(' ')[0];
                 body = text.Replace(command, "").Trim();
             }
-            var args = body.Split(' ');
 
             try
             {
@@ -131,10 +130,6 @@ namespace TrixieBot
                         crypties.Append("XMR ").Append(xmrUsd.ToString("c2")).Append(" B").AppendLine(xmrXbt.ToString("n6"));
 
                         protocol.SendPlainTextMessage(replyDestination, crypties.ToString());
-                        break;
-
-                    case "/doge":
-                        protocol.SendImage(replyDestination, "http://dogr.io/wow/" + body.Replace(",", "/").Replace(" ", "") + ".png", "Wow");
                         break;
 
                     case "/echo":
